@@ -1,0 +1,58 @@
+import type { Lesson } from "./types";
+
+export const lesson: Lesson = {
+  id: "03-insert-commands",
+  title: "Insert Commands (i a I A o O)",
+  section: "Fundamentals",
+  order: 3,
+  steps: [
+    {
+      kind: "explanation",
+      text: "Six ways into insert mode: `i` before cursor, `a` after cursor, `I` at first non-blank of the line, `A` at end of line, `o` open a new line below, `O` open a new line above. Choosing the right one saves motions.",
+    },
+    {
+      kind: "challenge",
+      id: "03-append-semicolon",
+      instruction: "Append `;` to the end of the line with a single insert command (don't move first).",
+      startText: "const x = 1",
+      startCursor: { line: 0, col: 0 },
+      targetText: "const x = 1;",
+      requireNormal: true,
+      par: 3,
+      hint: "A ; <Esc>",
+    },
+    {
+      kind: "challenge",
+      id: "03-comment-line",
+      instruction: "Prefix the line with `// ` using a single insert command.",
+      startText: "let broken = true;",
+      startCursor: { line: 0, col: 9 },
+      targetText: "// let broken = true;",
+      requireNormal: true,
+      par: 5,
+      hint: "I / / <Space> <Esc>",
+    },
+    {
+      kind: "challenge",
+      id: "03-open-below",
+      instruction: "Open a new line below and type `done`.",
+      startText: "first line",
+      startCursor: { line: 0, col: 3 },
+      targetText: "first line\ndone",
+      requireNormal: true,
+      par: 6,
+      hint: "o d-o-n-e <Esc>",
+    },
+    {
+      kind: "challenge",
+      id: "03-open-above",
+      instruction: "Open a new line above and type `intro`.",
+      startText: "main content",
+      startCursor: { line: 0, col: 5 },
+      targetText: "intro\nmain content",
+      requireNormal: true,
+      par: 7,
+      hint: "O i-n-t-r-o <Esc>",
+    },
+  ],
+};
