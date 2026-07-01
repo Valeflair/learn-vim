@@ -1,0 +1,60 @@
+import type { Lesson } from "./types";
+
+export const lesson: Lesson = {
+  id: "10-operator-grammar",
+  title: "Operator Grammar + the Dot Command",
+  section: "Editing",
+  order: 10,
+  steps: [
+    {
+      kind: "explanation",
+      text: "Vim commands compose: **operator + count + motion**. `d$` deletes to end of line, `c2w` changes two words, `df)` deletes through the next `)`. Any operator works with any motion you know — you already know dozens of combinations.",
+    },
+    {
+      kind: "challenge",
+      id: "10-d-dollar",
+      instruction: "Delete from the cursor to the end of the line.",
+      startText: "keep; remove all this",
+      startCursor: { line: 0, col: 5 },
+      targetText: "keep;",
+      par: 2,
+      hint: "d$ (or D — same thing)",
+    },
+    {
+      kind: "challenge",
+      id: "10-c2w",
+      instruction: "Change the first two words to `new`.",
+      startText: "very old broken code here",
+      startCursor: { line: 0, col: 0 },
+      targetText: "new broken code here",
+      requireNormal: true,
+      par: 7,
+      hint: "c2w new <Esc>",
+    },
+    {
+      kind: "challenge",
+      id: "10-df-paren",
+      instruction: "Delete everything through the closing `)` with `d` + `f)`.",
+      startText: "call(arg1, arg2) rest",
+      startCursor: { line: 0, col: 0 },
+      targetText: " rest",
+      par: 3,
+      hint: "df)",
+    },
+    {
+      kind: "explanation",
+      text: "The dot command `.` repeats your last change. Make an edit once, move somewhere else, press `.` — vim replays the whole edit. It's the cheapest automation in the editor.",
+    },
+    {
+      kind: "challenge",
+      id: "10-dot",
+      instruction: "Append `;` to both lines: do it once with `A`, then repeat it on the next line with `.`.",
+      startText: "const a = 1\nconst b = 2",
+      startCursor: { line: 0, col: 0 },
+      targetText: "const a = 1;\nconst b = 2;",
+      requireNormal: true,
+      par: 5,
+      hint: "A;<Esc> then j then .",
+    },
+  ],
+};
