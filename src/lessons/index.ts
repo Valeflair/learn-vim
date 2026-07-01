@@ -10,8 +10,18 @@ import { lesson as l08 } from "./08-deleting";
 import { lesson as l09 } from "./09-change-yank-put";
 import { lesson as l10 } from "./10-operator-grammar";
 import { lesson as l11 } from "./11-replace-misc";
+import { lesson as l12 } from "./12-search";
+import { lesson as l13 } from "./13-text-objects";
+import { lesson as l14 } from "./14-visual-mode";
+import { lesson as l15 } from "./15-registers";
+import { lesson as l16 } from "./16-marks";
+import { lesson as l17 } from "./17-macros";
+import { lesson as l18 } from "./18-capstone";
 
-export const lessons: Lesson[] = [l01, l02, l03, l04, l05, l06, l07, l08, l09, l10, l11];
+export const lessons: Lesson[] = [
+  l01, l02, l03, l04, l05, l06, l07, l08, l09,
+  l10, l11, l12, l13, l14, l15, l16, l17, l18,
+];
 
 export function getLesson(id: string): Lesson | undefined {
   return lessons.find((l) => l.id === id);

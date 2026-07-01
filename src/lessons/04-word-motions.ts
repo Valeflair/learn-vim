@@ -54,7 +54,7 @@ export const lesson: Lesson = {
       startCursor: { line: 1, col: 9 },
       targetText: PROSE,
       targetCursor: { line: 1, col: 7 },
-      par: 1,
+      par: 2,
       hint: "ge",
     },
     {
