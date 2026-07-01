@@ -66,10 +66,16 @@ type Challenge = {
 };
 ```
 
+Cursor positions are 0-indexed (line 0 = first line, col 0 = first column).
+
 Completion rule: challenge is solved when editor text equals `targetText`
 AND, if `targetCursor` is set, the cursor is at that position. Keystrokes are
 counted from challenge start; solving at or under `par` is highlighted, over
 par still passes.
+
+Keystroke counting: one key event consumed by the editor = one keystroke.
+A modifier chord like `<C-r>` counts as one; `daw` counts as three. Pure
+modifier presses (Shift/Ctrl alone) don't count.
 
 ## UI
 
