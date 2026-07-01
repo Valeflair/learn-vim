@@ -61,6 +61,7 @@ type Challenge = {
   startCursor: { line: number; col: number };
   targetText: string;
   targetCursor?: { line: number; col: number }; // set for pure-motion challenges
+  requireNormal?: boolean; // completion also requires normal mode (e.g. Esc drills)
   par: number;           // optimal keystroke count
   hint?: string;         // revealed on request
 };
@@ -69,7 +70,8 @@ type Challenge = {
 Cursor positions are 0-indexed (line 0 = first line, col 0 = first column).
 
 Completion rule: challenge is solved when editor text equals `targetText`
-AND, if `targetCursor` is set, the cursor is at that position. Keystrokes are
+AND, if `targetCursor` is set, the cursor is at that position, AND, if
+`requireNormal` is set, the editor is in normal mode. Keystrokes are
 counted from challenge start; solving at or under `par` is highlighted, over
 par still passes.
 
