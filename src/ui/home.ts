@@ -11,7 +11,7 @@ export function renderHome(app: HTMLElement): void {
   header.innerHTML = `
     <h1>Learn Vim by doing</h1>
     <p class="tagline">Thirty drill-based lessons, from <kbd>hjkl</kbd> to macros.
-    Every drill perturbs one code snippet with randomized tasks and times the run — beat your best.</p>
+    Every drill perturbs one code snippet with randomized tasks and times the run. Beat your best.</p>
     <p class="home-progress">${done} of ${lessons.length} lessons completed</p>
   `;
   app.appendChild(header);

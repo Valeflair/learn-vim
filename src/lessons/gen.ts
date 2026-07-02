@@ -255,7 +255,7 @@ export function relativeJump(): TaskGen {
     const n = Math.abs(lb - la);
     const key = lb > la ? `${n}j` : `${n}k`;
     return motionTask(base, { line: la, col: 0 }, { line: lb, col: 0 },
-      `Jump straight to the highlighted line — the relative number in the gutter is the count`, key);
+      `Jump straight to the highlighted line: the relative number in the gutter is the count`, key);
   };
 }
 
@@ -529,7 +529,7 @@ export function replaceChar(): TaskGen {
     const k = int(rng, 0, s.word.length - 1);
     const perturbed = replaceRange(base, s.line, s.from + k, s.from + k + 1, wrongChar(rng, s.word[k]));
     return restore(base, perturbed, {
-      instruction: `Fix the highlighted letter — it should be \`${s.word[k]}\``,
+      instruction: `Fix the highlighted letter: it should be \`${s.word[k]}\``,
       keyHint: `r${s.word[k]}`,
       marks: [{ line: s.line, from: s.from + k, to: s.from + k + 1 }],
     });
@@ -543,7 +543,7 @@ export function substituteChar(): TaskGen {
     const k = int(rng, 0, s.word.length - 1);
     const perturbed = replaceRange(base, s.line, s.from + k, s.from + k + 1, wrongChar(rng, s.word[k]));
     return restore(base, perturbed, {
-      instruction: `Fix the highlighted letter with \`s\` — type \`${s.word[k]}\`, then \`Esc\``,
+      instruction: `Fix the highlighted letter with \`s\`: type \`${s.word[k]}\`, then \`Esc\``,
       keyHint: "s",
       marks: [{ line: s.line, from: s.from + k, to: s.from + k + 1 }],
       requireNormal: true,
@@ -558,7 +558,7 @@ export function toggleCase(): TaskGen {
     const s = pick(rng, spans);
     const perturbed = replaceRange(base, s.line, s.from, s.from + 1, s.word[0].toUpperCase());
     return restore(base, perturbed, {
-      instruction: "The highlighted letter has the wrong case — toggle it",
+      instruction: "The highlighted letter has the wrong case. Toggle it",
       keyHint: "~",
       marks: [{ line: s.line, from: s.from, to: s.from + 1 }],
     });
@@ -679,7 +679,7 @@ export function joinLines(): TaskGen {
       ...base.slice(c.li + 1),
     ];
     return restore(base, perturbed, {
-      instruction: "The highlighted line was split in two — join it back together",
+      instruction: "The highlighted line was split in two. Join it back together",
       keyHint: "J",
       marks: [{ line: c.li, from: indentOf(line), to: c.s, kind: "focus" }],
     });
@@ -824,7 +824,7 @@ export function appendEnd(): TaskGen {
     const tail = base[c.li].slice(c.s);
     const perturbed = replaceRange(base, c.li, c.s, base[c.li].length, "");
     return restore(base, perturbed, {
-      instruction: "The line lost its ending — append exactly what the ghost shows, then `Esc`",
+      instruction: "The line lost its ending. Append exactly what the ghost shows, then `Esc`",
       keyHint: "A",
       ghost: { line: c.li, col: c.s, text: tail },
       requireNormal: true,
@@ -842,7 +842,7 @@ export function insertStart(): TaskGen {
     const s = pick(rng, spans);
     const perturbed = replaceRange(base, s.line, s.from, s.to + 1, "");
     return restore(base, perturbed, {
-      instruction: "The line lost its first word — restore it from the line start, then `Esc`",
+      instruction: "The line lost its first word. Restore it from the line start, then `Esc`",
       keyHint: "I",
       ghost: { line: s.line, col: s.from, text: s.word + " " },
       requireNormal: true,
@@ -875,8 +875,8 @@ export function openLine(dir: "o" | "O"): TaskGen {
     return restore(base, perturbed, {
       instruction:
         dir === "o"
-          ? "A line is missing — open a new line below the ghost's line and type it, then `Esc`"
-          : "A line is missing — open a new line above the ghost's line and type it, then `Esc`",
+          ? "A line is missing. Open a new line below the ghost's line and type it, then `Esc`"
+          : "A line is missing. Open a new line above the ghost's line and type it, then `Esc`",
       keyHint: dir,
       marks,
       ghost,
@@ -1016,7 +1016,7 @@ export function deleteAroundPara(): TaskGen {
     const junk = [`// scratch: ${pick(rng, WORDS)}`, `// scratch: ${pick(rng, WORDS)}`];
     const perturbed = [...base.slice(0, b + 1), ...junk, "", ...base.slice(b + 1)];
     return restore(base, perturbed, {
-      instruction: "Delete the highlighted stray paragraph — `dap` takes its blank line too",
+      instruction: "Delete the highlighted stray paragraph: `dap` takes its blank line too",
       keyHint: "dap",
       marks: junk.map((l, k) => ({ line: b + 1 + k, from: 0, to: l.length })),
       startCursor: { line: b + 1, col: 0 },
