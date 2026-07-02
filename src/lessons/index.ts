@@ -1,4 +1,4 @@
-import type { Lesson } from "./types";
+import type { Lesson, TaskGen } from "./types";
 import { lesson as l01 } from "./01-intro-to-modes";
 import { lesson as l02 } from "./02-basic-movement";
 import { lesson as l03 } from "./03-moving-by-words";
@@ -44,4 +44,13 @@ export function adjacentLessons(id: string): { prev?: Lesson; next?: Lesson } {
   const i = lessons.findIndex((l) => l.id === id);
   if (i < 0) return {};
   return { prev: lessons[i - 1], next: lessons[i + 1] };
+}
+
+/**
+ * Revision pool: this lesson's generators plus everything from earlier
+ * lessons. Restricted to lessons on the default snippet pool — generators
+ * written for custom snippets (e.g. macros) aren't safe on code snippets.
+ */
+export function revisionGenerators(lesson: Lesson): readonly TaskGen[] {
+  return lessons.filter((l) => l.order <= lesson.order && !l.snippets).flatMap((l) => l.generators);
 }

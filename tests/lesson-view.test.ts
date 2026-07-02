@@ -82,6 +82,22 @@ describe("renderLesson", () => {
     const rec = lessonRecord("t-lesson");
     expect(rec?.done).toBe(true);
     expect(rec?.bestKeystrokes).toBe(2);
+    // No duplicate "Next" link — the bottom nav already has one.
+    expect(app.querySelector(".results")!.textContent).not.toContain("Next:");
+  });
+
+  it("offers a revision rerun and lists previous runs", async () => {
+    cleanup = renderLesson(app, lesson);
+    expect(app.querySelector(".runs-list")!.textContent).toContain("no runs yet");
+    press("x");
+    await settle();
+    press("x");
+    await settle();
+    expect(app.querySelectorAll(".runs-list li").length).toBe(1);
+
+    const rev = app.querySelector<HTMLButtonElement>(".again-rev")!;
+    rev.click();
+    expect(app.querySelector(".drill-count")!.textContent).toContain("· revision");
   });
 
   it("navigates between lessons with Ctrl+j and Ctrl+k", () => {

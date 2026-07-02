@@ -1,5 +1,5 @@
 import type { Lesson } from "../lessons/types";
-import { adjacentLessons } from "../lessons/index";
+import { adjacentLessons, revisionGenerators } from "../lessons/index";
 import { createEditor, type EditorHandle } from "../engine/editor";
 import { Drill, randomSeed } from "../challenge/drill";
 import { recordResult, lessonRecord, formatTime } from "../progress/store";
@@ -14,6 +14,8 @@ export function renderLesson(app: HTMLElement, lesson: Lesson): () => void {
   let editor: EditorHandle | null = null;
   let drill = new Drill(lesson, randomSeed());
   let advancing = false;
+  // Revision runs mix in tasks from earlier lessons; off by default.
+  let revised = false;
 
   const { prev, next } = adjacentLessons(lesson.id);
 
@@ -37,6 +39,10 @@ export function renderLesson(app: HTMLElement, lesson: Lesson): () => void {
           <span class="drill-dots"></span>
         </div>
         <div class="drill-body"></div>
+        <details class="runs">
+          <summary>previous runs</summary>
+          <ol class="runs-list"></ol>
+        </details>
       </section>
     </div>
     <nav class="lesson-nav"></nav>
@@ -100,11 +106,31 @@ export function renderLesson(app: HTMLElement, lesson: Lesson): () => void {
     }
   }, 250);
 
+  const runsList = root.querySelector<HTMLElement>(".runs-list")!;
+  function renderRuns(): void {
+    const runs = lessonRecord(lesson.id)?.runs ?? [];
+    runsList.innerHTML = runs.length
+      ? [...runs]
+          .reverse()
+          .map(
+            (r) => `<li>
+              <span class="run-date">${new Date(r.at).toLocaleString([], { dateStyle: "short", timeStyle: "short" })}</span>
+              <span class="run-time">${formatTime(r.timeMs)}</span>
+              <span class="run-keys">${r.keystrokes} keys</span>
+              ${r.revised ? '<span class="run-rev">revision</span>' : ""}
+            </li>`,
+          )
+          .join("")
+      : '<li class="run-empty">no runs yet</li>';
+  }
+  renderRuns();
+
   function updateHead(): void {
+    const rev = revised ? " · revision" : "";
     if (drill.state === "finished") {
-      countEl.textContent = "Drill complete";
+      countEl.textContent = `Drill complete${rev}`;
     } else {
-      countEl.textContent = `Task ${drill.taskIndex + 1} of ${drill.total}`;
+      countEl.textContent = `Task ${drill.taskIndex + 1} of ${drill.total}${rev}`;
     }
     dotsEl.innerHTML = "";
     for (let i = 0; i < drill.total; i++) {
@@ -124,8 +150,9 @@ export function renderLesson(app: HTMLElement, lesson: Lesson): () => void {
     editor = null;
   }
 
-  function restart(): void {
-    drill = new Drill(lesson, randomSeed());
+  function restart(withRevisions: boolean): void {
+    revised = withRevisions;
+    drill = new Drill(lesson, randomSeed(), withRevisions ? revisionGenerators(lesson) : undefined);
     advancing = false;
     mountTask();
   }
@@ -192,7 +219,7 @@ export function renderLesson(app: HTMLElement, lesson: Lesson): () => void {
     });
 
     body.querySelector(".reset-task")!.addEventListener("click", mountTask);
-    body.querySelector(".restart")!.addEventListener("click", restart);
+    body.querySelector(".restart")!.addEventListener("click", () => restart(revised));
     editor.focus();
   }
 
@@ -203,9 +230,10 @@ export function renderLesson(app: HTMLElement, lesson: Lesson): () => void {
 
     const res = drill.result()!;
     const before = lessonRecord(lesson.id);
-    recordResult(lesson.id, res.timeMs, res.keystrokes);
-    const newBestTime = !before || res.timeMs < before.bestTimeMs;
-    const newBestKeys = !before || res.keystrokes < before.bestKeystrokes;
+    recordResult(lesson.id, res.timeMs, res.keystrokes, revised);
+    const newBestTime = !revised && (!before || res.timeMs < before.bestTimeMs);
+    const newBestKeys = !revised && (!before || res.keystrokes < before.bestKeystrokes);
+    renderRuns();
 
     body.innerHTML = `
       <div class="results">
@@ -227,11 +255,12 @@ export function renderLesson(app: HTMLElement, lesson: Lesson): () => void {
         }
         <div class="results-actions">
           <button class="primary again">↻ Run again</button>
-          ${next ? `<a class="button-link" href="#/lesson/${next.id}">Next: ${next.title} →</a>` : ""}
+          <button class="again-rev" title="Mix in tasks from all earlier lessons">↻ Run again with revisions</button>
         </div>
       </div>
     `;
-    body.querySelector(".again")!.addEventListener("click", restart);
+    body.querySelector(".again")!.addEventListener("click", () => restart(false));
+    body.querySelector(".again-rev")!.addEventListener("click", () => restart(true));
   }
 
   mountTask();

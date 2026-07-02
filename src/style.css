@@ -288,6 +288,29 @@ kbd {
 .stat { color: var(--dim); }
 .spacer { flex: 1; }
 
+/* ------------------------------------------------------------ run history */
+
+.runs { margin-top: 12px; }
+.runs summary {
+  color: var(--dim);
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+}
+.runs summary:hover { color: var(--text); }
+.runs-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.runs-list li {
+  display: flex;
+  gap: 16px;
+  padding: 4px 2px;
+  border-top: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--dim);
+}
+.runs-list .run-time, .runs-list .run-keys { color: var(--text); }
+.runs-list .run-rev { color: var(--visual); }
+
 /* --------------------------------------------------------------- results */
 
 .results { text-align: center; padding: 26px 0 10px; }

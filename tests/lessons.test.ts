@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { lessons } from "../src/lessons/index";
+import { lessons, revisionGenerators } from "../src/lessons/index";
 import { mulberry32, SNIPPETS } from "../src/lessons/gen";
 import type { Cursor, Task } from "../src/lessons/types";
 
@@ -59,6 +59,19 @@ describe("lesson data", () => {
         expect(k.label.length, l.id).toBeGreaterThan(0);
       }
     }
+  });
+
+  it("revision pools grow with the lesson and skip custom-snippet lessons", () => {
+    const last = lessons[lessons.length - 1];
+    const pool = revisionGenerators(last);
+    expect(pool.length).toBeGreaterThan(last.generators.length);
+    // Custom-snippet lessons (macros) are unsafe on code snippets.
+    const custom = lessons.filter((l) => l.snippets);
+    expect(custom.length).toBeGreaterThan(0);
+    for (const l of custom) {
+      for (const g of l.generators) expect(pool).not.toContain(g);
+    }
+    expect(revisionGenerators(lessons[0])).toEqual([...lessons[0].generators]);
   });
 
   it("every generator produces well-formed tasks for every snippet across many seeds", () => {

@@ -14,8 +14,22 @@ describe("progress store", () => {
     recordResult("l1", 90_000, 120);
     recordResult("l1", 60_000, 200);
     recordResult("l1", 80_000, 100);
-    expect(lessonRecord("l1")).toEqual({ done: true, bestTimeMs: 60_000, bestKeystrokes: 100 });
+    const rec = lessonRecord("l1")!;
+    expect(rec.done).toBe(true);
+    expect(rec.bestTimeMs).toBe(60_000);
+    expect(rec.bestKeystrokes).toBe(100);
     expect(isLessonDone("l1")).toBe(true);
+  });
+
+  it("keeps a run history and excludes revision runs from bests", () => {
+    recordResult("l1", 90_000, 120);
+    recordResult("l1", 50_000, 80, true);
+    const rec = lessonRecord("l1")!;
+    expect(rec.bestTimeMs).toBe(90_000);
+    expect(rec.bestKeystrokes).toBe(120);
+    expect(rec.runs).toHaveLength(2);
+    expect(rec.runs![0].revised).toBeUndefined();
+    expect(rec.runs![1]).toMatchObject({ timeMs: 50_000, keystrokes: 80, revised: true });
   });
 
   it("survives corrupt data", () => {

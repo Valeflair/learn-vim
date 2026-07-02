@@ -1,9 +1,18 @@
 const KEY = "learn-vim-progress-v2";
 
+export type RunRecord = {
+  at: number;
+  timeMs: number;
+  keystrokes: number;
+  /** Run mixed in tasks from earlier lessons; excluded from bests. */
+  revised?: boolean;
+};
+
 export type DrillRecord = {
   done: boolean;
   bestTimeMs: number;
   bestKeystrokes: number;
+  runs?: RunRecord[];
 };
 
 export type ProgressData = {
@@ -27,15 +36,24 @@ export function loadProgress(): ProgressData {
   }
 }
 
-/** Record a finished drill; keeps the best time and best keystrokes separately. */
-export function recordResult(lessonId: string, timeMs: number, keystrokes: number): void {
+/**
+ * Record a finished drill: appends to the run history (capped) and keeps the
+ * best time and best keystrokes separately. Revision runs mix in tasks from
+ * earlier lessons, so they never update the bests of a normal run.
+ */
+export function recordResult(lessonId: string, timeMs: number, keystrokes: number, revised = false): void {
   const data = loadProgress();
   const prev = data.lessons[lessonId];
-  data.lessons[lessonId] = {
-    done: true,
-    bestTimeMs: prev ? Math.min(prev.bestTimeMs, timeMs) : timeMs,
-    bestKeystrokes: prev ? Math.min(prev.bestKeystrokes, keystrokes) : keystrokes,
-  };
+  const run: RunRecord = { at: Date.now(), timeMs, keystrokes };
+  if (revised) run.revised = true;
+  const runs = [...(prev?.runs ?? []), run].slice(-50);
+  let bestTimeMs = timeMs;
+  let bestKeystrokes = keystrokes;
+  if (prev) {
+    bestTimeMs = revised ? prev.bestTimeMs : Math.min(prev.bestTimeMs, timeMs);
+    bestKeystrokes = revised ? prev.bestKeystrokes : Math.min(prev.bestKeystrokes, keystrokes);
+  }
+  data.lessons[lessonId] = { done: true, bestTimeMs, bestKeystrokes, runs };
   localStorage.setItem(KEY, JSON.stringify(data));
 }
 
