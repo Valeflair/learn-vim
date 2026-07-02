@@ -144,11 +144,6 @@ export function createEditor(opts: EditorOptions): EditorHandle {
       taskField,
       keymap.of([...defaultKeymap, ...historyKeymap]),
       EditorView.domEventHandlers({
-        keydown: (e) => {
-          const key = formatKey(e);
-          if (key) opts.onKey?.(key);
-          return false; // never consume; vim handles the key
-        },
         // No mouse in vim training: clicking focuses the editor but never
         // moves the cursor or drags a selection.
         mousedown: (e, view) => {
@@ -164,6 +159,14 @@ export function createEditor(opts: EditorOptions): EditorHandle {
   });
 
   const view = new EditorView({ state, parent: opts.parent });
+
+  // Count keys with a capture listener on the raw DOM: vim's own keydown
+  // handler consumes normal-mode keys before extension handlers ever run.
+  const countKey = (e: KeyboardEvent) => {
+    const key = formatKey(e);
+    if (key) opts.onKey?.(key);
+  };
+  view.dom.addEventListener("keydown", countKey, true);
 
   if (opts.cursor) {
     const line = view.state.doc.line(Math.min(opts.cursor.line, view.state.doc.lines - 1) + 1);
@@ -186,6 +189,9 @@ export function createEditor(opts: EditorOptions): EditorHandle {
     },
     getMode: () => mode,
     focus: () => view.focus(),
-    destroy: () => view.destroy(),
+    destroy: () => {
+      view.dom.removeEventListener("keydown", countKey, true);
+      view.destroy();
+    },
   };
 }
