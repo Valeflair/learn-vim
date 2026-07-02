@@ -1,17 +1,19 @@
 import {
   EditorView,
   keymap,
-  lineNumbers,
+  gutter,
+  GutterMarker,
   drawSelection,
   highlightActiveLine,
   Decoration,
+  WidgetType,
 } from "@codemirror/view";
 import type { DecorationSet } from "@codemirror/view";
 import { EditorState, EditorSelection, StateField } from "@codemirror/state";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { vim, getCM } from "@replit/codemirror-vim";
 import { formatKey } from "./keys";
-import type { Cursor, TaskMark } from "../lessons/types";
+import type { Cursor, TaskGhost, TaskMark } from "../lessons/types";
 
 export type EditorHandle = {
   getText(): string;
@@ -27,8 +29,10 @@ export type EditorOptions = {
   cursor?: Cursor;
   /** Green cell the cursor should land on (motion tasks). */
   target?: Cursor;
-  /** Red highlights over text to delete or change (edit tasks). */
+  /** Red = text to delete or change; blue = the line/span to act on. */
   marks?: TaskMark[];
+  /** Missing text rendered as a green dashed box at its insertion point. */
+  ghost?: TaskGhost;
   onKey?: (key: string) => void;
   onChange?: () => void;
   onModeChange?: (mode: string) => void;
@@ -37,23 +41,81 @@ export type EditorOptions = {
 const targetMark = Decoration.mark({ class: "lv-target" });
 const targetLine = Decoration.line({ class: "lv-target-line" });
 const editMark = Decoration.mark({ class: "lv-mark" });
+const focusMark = Decoration.mark({ class: "lv-focus" });
+
+class GhostWidget extends WidgetType {
+  constructor(private readonly text: string) {
+    super();
+  }
+  override eq(other: GhostWidget): boolean {
+    return other.text === this.text;
+  }
+  override toDOM(): HTMLElement {
+    const el = document.createElement("span");
+    el.className = "lv-ghost";
+    el.textContent = this.text;
+    return el;
+  }
+  override ignoreEvent(): boolean {
+    return true;
+  }
+}
+
+/**
+ * Hybrid line numbers, vim-hero style: the cursor line shows its absolute
+ * number (bold), every other line its distance from the cursor — exactly the
+ * counts that {n}j / {n}k take.
+ */
+class LineNum extends GutterMarker {
+  constructor(
+    private readonly label: string,
+    private readonly current: boolean,
+  ) {
+    super();
+  }
+  override eq(other: LineNum): boolean {
+    return other.label === this.label && other.current === this.current;
+  }
+  override toDOM(): Node {
+    const el = document.createElement("span");
+    el.className = this.current ? "lv-lnr lv-lnr-current" : "lv-lnr";
+    el.textContent = this.label;
+    return el;
+  }
+}
+
+const hybridLineNumbers = gutter({
+  class: "cm-lineNumbers",
+  lineMarker(view, line) {
+    const doc = view.state.doc;
+    const cur = doc.lineAt(view.state.selection.main.head).number;
+    const n = doc.lineAt(line.from).number;
+    return new LineNum(n === cur ? String(n) : String(Math.abs(n - cur)), n === cur);
+  },
+  lineMarkerChange: (update) => update.selectionSet,
+});
 
 function posAt(doc: EditorState["doc"], line: number, col: number): { from: number; to: number } {
   const l = doc.line(Math.min(line, doc.lines - 1) + 1);
   return { from: Math.min(l.from + col, l.to), to: l.to };
 }
 
-function taskDecorations(state: EditorState, target?: Cursor, marks?: TaskMark[]): DecorationSet {
+function taskDecorations(state: EditorState, opts: EditorOptions): DecorationSet {
   const ranges = [];
-  if (marks) {
-    for (const m of marks) {
+  if (opts.marks) {
+    for (const m of opts.marks) {
       const { from } = posAt(state.doc, m.line, m.from);
       const { from: to } = posAt(state.doc, m.line, m.to);
-      if (from < to) ranges.push(editMark.range(from, to));
+      const deco = m.kind === "focus" ? focusMark : editMark;
+      if (from < to) ranges.push(deco.range(from, to));
     }
   }
-  if (target) {
-    const { from, to } = posAt(state.doc, target.line, target.col);
+  if (opts.ghost) {
+    const { from } = posAt(state.doc, opts.ghost.line, opts.ghost.col);
+    ranges.push(Decoration.widget({ widget: new GhostWidget(opts.ghost.text), side: 1 }).range(from));
+  }
+  if (opts.target) {
+    const { from, to } = posAt(state.doc, opts.target.line, opts.target.col);
     if (from < to) ranges.push(targetMark.range(from, from + 1));
     else ranges.push(targetLine.range(state.doc.lineAt(from).from));
   }
@@ -66,7 +128,7 @@ export function createEditor(opts: EditorOptions): EditorHandle {
   // Highlights survive edits by mapping through changes; a deleted red mark
   // collapses to nothing, which is exactly when it should disappear.
   const taskField = StateField.define<DecorationSet>({
-    create: (state) => taskDecorations(state, opts.target, opts.marks),
+    create: (state) => taskDecorations(state, opts),
     update: (deco, tr) => (tr.docChanged ? deco.map(tr.changes) : deco),
     provide: (f) => EditorView.decorations.from(f),
   });
@@ -75,7 +137,7 @@ export function createEditor(opts: EditorOptions): EditorHandle {
     doc: opts.doc,
     extensions: [
       vim(), // must precede other keymaps
-      lineNumbers(),
+      hybridLineNumbers,
       history(),
       drawSelection(),
       highlightActiveLine(),
@@ -86,6 +148,13 @@ export function createEditor(opts: EditorOptions): EditorHandle {
           const key = formatKey(e);
           if (key) opts.onKey?.(key);
           return false; // never consume; vim handles the key
+        },
+        // No mouse in vim training: clicking focuses the editor but never
+        // moves the cursor or drags a selection.
+        mousedown: (e, view) => {
+          e.preventDefault();
+          view.focus();
+          return true;
         },
       }),
       EditorView.updateListener.of((update) => {
