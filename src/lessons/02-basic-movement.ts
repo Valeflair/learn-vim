@@ -7,9 +7,9 @@ export const lesson: Lesson = {
   section: "Basics",
   order: 2,
   intro: [
-    "In normal mode you move with `h` `j` `k` `l` — no arrow keys, no mouse. Your fingers never leave the home row: `h` is on the left and moves left, `l` is on the right and moves right.",
+    "In normal mode you move with `h` `j` `k` `l` — no arrow keys, no mouse (clicking in the editor is disabled here on purpose). Your fingers never leave the home row: `h` is on the left and moves left, `l` is on the right and moves right.",
     "`j` looks a bit like a down-arrow and moves **down**; `k` moves **up**. It feels alien for about ten minutes, then it becomes muscle memory.",
-    "Move the cursor onto the green cell to complete each task. Try to think in direction + repetition: three lines down is `jjj` (or `3j`).",
+    "Move the cursor onto the green cell to complete each task. Think in direction plus repetition: three lines down is `jjj` — or `3j`, which the gutter's relative numbers are made for.",
   ],
   keys: [
     { keys: "h", label: "move left" },
