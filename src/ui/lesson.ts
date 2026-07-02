@@ -1,182 +1,215 @@
-import type { Lesson, Step, Challenge } from "../lessons/types";
+import type { Lesson } from "../lessons/types";
+import { adjacentLessons } from "../lessons/index";
 import { createEditor, type EditorHandle } from "../engine/editor";
-import { Referee } from "../challenge/referee";
-import { recordResult } from "../progress/store";
+import { Drill, randomSeed } from "../challenge/drill";
+import { recordResult, lessonRecord, formatTime } from "../progress/store";
+import { md } from "./md";
 
-function inlineCode(text: string): string {
-  const esc = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  return esc.replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-}
-
-export function renderLesson(app: HTMLElement, lesson: Lesson): void {
-  let stepIndex = 0;
+/**
+ * Drill view: the lesson's explanation and key reference stay visible on the
+ * left while ~10 randomized tasks run in the editor on the right, measured
+ * by elapsed time and total keystrokes.
+ */
+export function renderLesson(app: HTMLElement, lesson: Lesson): () => void {
   let editor: EditorHandle | null = null;
+  let drill = new Drill(lesson, randomSeed());
+  let advancing = false;
+
+  const { prev, next } = adjacentLessons(lesson.id);
+
+  app.innerHTML = "";
+  const root = document.createElement("div");
+  root.className = "lesson";
+  root.innerHTML = `
+    <header class="lesson-header">
+      <p class="crumb">${lesson.section} · Lesson ${lesson.order}</p>
+      <h1>${lesson.title}</h1>
+    </header>
+    <div class="lesson-columns">
+      <aside class="lesson-doc">
+        <div class="intro"></div>
+        <h2>Keys in this lesson</h2>
+        <ul class="key-ref"></ul>
+      </aside>
+      <section class="lesson-drill">
+        <div class="drill-head">
+          <span class="drill-count"></span>
+          <span class="drill-dots"></span>
+        </div>
+        <div class="drill-body"></div>
+      </section>
+    </div>
+    <nav class="lesson-nav"></nav>
+  `;
+  app.appendChild(root);
+
+  const intro = root.querySelector<HTMLElement>(".intro")!;
+  for (const para of lesson.intro) {
+    const p = document.createElement("p");
+    p.innerHTML = md(para);
+    intro.appendChild(p);
+  }
+
+  const keyRef = root.querySelector<HTMLElement>(".key-ref")!;
+  for (const k of lesson.keys) {
+    const li = document.createElement("li");
+    li.innerHTML = `<kbd>${md(k.keys).replace(/<\/?kbd>/g, "")}</kbd><span>${md(k.label)}</span>`;
+    keyRef.appendChild(li);
+  }
+
+  const nav = root.querySelector<HTMLElement>(".lesson-nav")!;
+  nav.innerHTML = `
+    ${prev ? `<a class="nav-prev" href="#/lesson/${prev.id}">← ${prev.title}</a>` : "<span></span>"}
+    ${next ? `<a class="nav-next" href="#/lesson/${next.id}">${next.title} →</a>` : "<span></span>"}
+  `;
+
+  const countEl = root.querySelector<HTMLElement>(".drill-count")!;
+  const dotsEl = root.querySelector<HTMLElement>(".drill-dots")!;
+  const body = root.querySelector<HTMLElement>(".drill-body")!;
+
+  let timerEl: HTMLElement | null = null;
+  const timerId = window.setInterval(() => {
+    if (timerEl && drill.state === "running") {
+      timerEl.textContent = formatTime(drill.elapsedMs());
+    }
+  }, 250);
+
+  function updateHead(): void {
+    if (drill.state === "finished") {
+      countEl.textContent = "Drill complete";
+    } else {
+      countEl.textContent = `Task ${drill.taskIndex + 1} of ${drill.total}`;
+    }
+    dotsEl.innerHTML = "";
+    for (let i = 0; i < drill.total; i++) {
+      const dot = document.createElement("span");
+      dot.className =
+        i < drill.taskIndex || drill.state === "finished"
+          ? "dot done"
+          : i === drill.taskIndex
+            ? "dot current"
+            : "dot";
+      dotsEl.appendChild(dot);
+    }
+  }
 
   function teardown(): void {
     editor?.destroy();
     editor = null;
   }
 
-  function next(): void {
+  function restart(): void {
+    drill = new Drill(lesson, randomSeed());
+    advancing = false;
+    mountTask();
+  }
+
+  function mountTask(): void {
     teardown();
-    stepIndex++;
-    render();
-  }
+    updateHead();
+    const task = drill.current;
 
-  function render(): void {
-    app.innerHTML = "";
-
-    const top = document.createElement("div");
-    top.className = "lesson-top";
-    top.innerHTML = `<h1>${lesson.title}</h1><a href="#/">← lessons</a>`;
-    app.appendChild(top);
-
-    const progress = document.createElement("div");
-    progress.className = "progress-line";
-    progress.textContent = `Step ${Math.min(stepIndex + 1, lesson.steps.length)} of ${lesson.steps.length}`;
-    app.appendChild(progress);
-
-    if (stepIndex >= lesson.steps.length) {
-      renderComplete();
-      return;
-    }
-    const step = lesson.steps[stepIndex];
-    if (step.kind === "explanation") renderExplanation(step);
-    else renderChallenge(step);
-  }
-
-  function renderComplete(): void {
-    const div = document.createElement("div");
-    div.className = "instruction";
-    div.innerHTML = `<p>Lesson complete 🎉</p><p><a href="#/">Back to all lessons</a></p>`;
-    app.appendChild(div);
-  }
-
-  function renderExplanation(step: Extract<Step, { kind: "explanation" }>): void {
-    const div = document.createElement("div");
-    div.className = "instruction explanation";
-    div.innerHTML = inlineCode(step.text);
-    app.appendChild(div);
-
-    if (step.example) {
-      const pre = document.createElement("pre");
-      pre.className = "editor-wrap";
-      pre.textContent = step.example.text;
-      app.appendChild(pre);
-    }
-
-    const controls = document.createElement("div");
-    controls.className = "controls";
-    const btn = document.createElement("button");
-    btn.className = "primary";
-    btn.textContent = "Continue";
-    btn.addEventListener("click", next);
-    controls.appendChild(btn);
-    app.appendChild(controls);
-  }
-
-  function renderChallenge(challenge: Challenge): void {
-    const referee = new Referee(challenge);
-
-    const instr = document.createElement("div");
-    instr.className = "instruction";
-    instr.innerHTML = inlineCode(challenge.instruction);
-    app.appendChild(instr);
-
-    const wrap = document.createElement("div");
-    wrap.className = "editor-wrap";
-    app.appendChild(wrap);
-
-    const bar = document.createElement("div");
-    bar.className = "status-bar";
-    const modeEl = document.createElement("span");
-    modeEl.className = "mode mode-normal";
-    modeEl.textContent = "normal";
-    const keysEl = document.createElement("span");
-    keysEl.className = "keys";
-    const parEl = document.createElement("span");
-    parEl.className = "par";
-    const solvedEl = document.createElement("span");
-    bar.append(modeEl, keysEl, parEl, solvedEl);
-    app.appendChild(bar);
-
-    const controls = document.createElement("div");
-    controls.className = "controls";
-    const resetBtn = document.createElement("button");
-    resetBtn.textContent = "Reset";
-    const nextBtn = document.createElement("button");
-    nextBtn.className = "primary";
-    nextBtn.textContent = "Next";
-    nextBtn.disabled = true;
-    const skipBtn = document.createElement("button");
-    skipBtn.textContent = "Skip";
-    controls.append(resetBtn);
-    if (challenge.hint) {
-      const hintBtn = document.createElement("button");
-      hintBtn.textContent = "Hint";
-      hintBtn.addEventListener("click", () => {
-        hint.textContent = challenge.hint!;
-      });
-      controls.append(hintBtn);
-    }
-    controls.append(skipBtn, nextBtn);
-    app.appendChild(controls);
-
-    const hint = document.createElement("div");
-    hint.className = "hint-text";
-    app.appendChild(hint);
-
-    function updateBar(): void {
-      keysEl.textContent = referee.keystrokes.join(" ");
-      parEl.textContent = `${referee.count} / par ${challenge.par}`;
-      parEl.className = referee.underPar ? "par" : "par par-over";
-      if (referee.solved) {
-        solvedEl.className = "solved";
-        solvedEl.textContent = `✓ Solved in ${referee.count} (par ${challenge.par})`;
-        nextBtn.disabled = false;
-      } else {
-        solvedEl.className = "";
-        solvedEl.textContent = "";
-      }
-    }
+    body.innerHTML = `
+      <div class="task-instruction">
+        <span class="task-text">${md(task.instruction)}</span>
+        ${task.keyHint ? `<span class="key-chip">${task.keyHint}</span>` : ""}
+      </div>
+      <div class="editor-wrap"></div>
+      <div class="status-bar">
+        <span class="mode mode-normal">NORMAL</span>
+        <span class="stat timer">00:00</span>
+        <span class="stat kcount">0 keys</span>
+        <span class="spacer"></span>
+        <button class="ghost reset-task" title="Reset this task">reset task</button>
+        <button class="ghost restart" title="Restart the drill with new tasks">↻ restart</button>
+      </div>
+    `;
+    const wrap = body.querySelector<HTMLElement>(".editor-wrap")!;
+    const modeEl = body.querySelector<HTMLElement>(".mode")!;
+    const kcountEl = body.querySelector<HTMLElement>(".kcount")!;
+    timerEl = body.querySelector<HTMLElement>(".timer")!;
+    timerEl.textContent = formatTime(drill.elapsedMs());
+    kcountEl.textContent = `${drill.keystrokes} keys`;
 
     function checkNow(): void {
-      if (!editor) return;
-      const wasSolved = referee.solved;
-      if (referee.check(editor.getText(), editor.getCursor(), editor.getMode()) && !wasSolved) {
-        recordResult(challenge.id, referee.count);
+      if (advancing || !editor) return;
+      if (drill.check(editor.getText(), editor.getCursor(), editor.getMode())) {
+        advancing = true;
+        wrap.classList.add("solved");
+        window.setTimeout(() => {
+          drill.advance();
+          advancing = false;
+          if (drill.state === "finished") finish();
+          else mountTask();
+        }, 300);
       }
-      updateBar();
     }
 
-    function mount(): void {
-      teardown();
-      wrap.innerHTML = "";
-      referee.reset();
-      editor = createEditor({
-        parent: wrap,
-        doc: challenge.startText,
-        cursor: challenge.startCursor,
-        onKey: (k) => {
-          referee.onKey(k);
-          updateBar();
-        },
-        onChange: checkNow,
-        onModeChange: (m) => {
-          modeEl.textContent = m;
-          modeEl.className = `mode mode-${m}`;
-          checkNow();
-        },
-      });
-      updateBar();
-      editor.focus();
-    }
+    editor = createEditor({
+      parent: wrap,
+      doc: task.startText,
+      cursor: task.startCursor,
+      target: task.targetCursor,
+      marks: task.marks,
+      onKey: () => {
+        drill.recordKey();
+        kcountEl.textContent = `${drill.keystrokes} keys`;
+      },
+      onChange: checkNow,
+      onModeChange: (m) => {
+        modeEl.textContent = m.toUpperCase();
+        modeEl.className = `mode mode-${m}`;
+        checkNow();
+      },
+    });
 
-    resetBtn.addEventListener("click", mount);
-    skipBtn.addEventListener("click", next);
-    nextBtn.addEventListener("click", next);
-    mount();
+    body.querySelector(".reset-task")!.addEventListener("click", mountTask);
+    body.querySelector(".restart")!.addEventListener("click", restart);
+    editor.focus();
   }
 
-  render();
+  function finish(): void {
+    teardown();
+    updateHead();
+    timerEl = null;
+
+    const res = drill.result()!;
+    const before = lessonRecord(lesson.id);
+    recordResult(lesson.id, res.timeMs, res.keystrokes);
+    const newBestTime = !before || res.timeMs < before.bestTimeMs;
+    const newBestKeys = !before || res.keystrokes < before.bestKeystrokes;
+
+    body.innerHTML = `
+      <div class="results">
+        <p class="results-title">✓ Drill complete</p>
+        <div class="results-stats">
+          <div class="results-stat">
+            <span class="value">${formatTime(res.timeMs)}</span>
+            <span class="label">time${newBestTime ? " · new best" : ""}</span>
+          </div>
+          <div class="results-stat">
+            <span class="value">${res.keystrokes}</span>
+            <span class="label">keystrokes${newBestKeys ? " · new best" : ""}</span>
+          </div>
+        </div>
+        ${
+          before
+            ? `<p class="results-best">previous best: ${formatTime(before.bestTimeMs)} · ${before.bestKeystrokes} keys</p>`
+            : ""
+        }
+        <div class="results-actions">
+          <button class="primary again">↻ Run again</button>
+          ${next ? `<a class="button-link" href="#/lesson/${next.id}">Next: ${next.title} →</a>` : ""}
+        </div>
+      </div>
+    `;
+    body.querySelector(".again")!.addEventListener("click", restart);
+  }
+
+  mountTask();
+
+  return () => {
+    window.clearInterval(timerId);
+    teardown();
+  };
 }

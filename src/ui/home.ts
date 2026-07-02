@@ -1,19 +1,26 @@
 import { lessons } from "../lessons/index";
-import { lessonProgress } from "../progress/store";
-
-const BADGE = { none: "", partial: "◐", done: "✓" } as const;
+import { lessonRecord, formatTime } from "../progress/store";
 
 export function renderHome(app: HTMLElement): void {
+  app.innerHTML = "";
+
+  const done = lessons.filter((l) => lessonRecord(l.id)?.done).length;
+
+  const header = document.createElement("header");
+  header.className = "home-header";
+  header.innerHTML = `
+    <h1>Learn Vim by doing</h1>
+    <p class="tagline">Eighteen drill-based lessons, from <kbd>hjkl</kbd> to macros.
+    Each drill throws randomized tasks at you and times the run — beat your best.</p>
+    <p class="home-progress">${done} of ${lessons.length} lessons completed</p>
+  `;
+  app.appendChild(header);
+
   const sections = new Map<string, typeof lessons>();
   for (const lesson of lessons) {
     if (!sections.has(lesson.section)) sections.set(lesson.section, []);
     sections.get(lesson.section)!.push(lesson);
   }
-
-  app.innerHTML = "";
-  const h1 = document.createElement("h1");
-  h1.textContent = "learn-vim";
-  app.appendChild(h1);
 
   for (const [name, sectionLessons] of sections) {
     const h2 = document.createElement("h2");
@@ -23,11 +30,16 @@ export function renderHome(app: HTMLElement): void {
     const grid = document.createElement("div");
     grid.className = "grid";
     for (const lesson of sectionLessons) {
-      const state = lessonProgress(lesson);
+      const rec = lessonRecord(lesson.id);
       const card = document.createElement("a");
-      card.className = `card card-${state}`;
+      card.className = rec?.done ? "card card-done" : "card";
       card.href = `#/lesson/${lesson.id}`;
-      card.innerHTML = `<span class="card-order">${lesson.order}</span> ${lesson.title} <span class="card-badge">${BADGE[state]}</span>`;
+      const keys = lesson.keys.map((k) => k.keys).join("  ");
+      card.innerHTML = `
+        <span class="card-title"><span class="card-order">${String(lesson.order).padStart(2, "0")}</span> ${lesson.title}</span>
+        <span class="card-keys">${keys}</span>
+        <span class="card-best">${rec?.done ? `✓ best ${formatTime(rec.bestTimeMs)} · ${rec.bestKeystrokes} keys` : `${lesson.taskCount} tasks`}</span>
+      `;
       grid.appendChild(card);
     }
     app.appendChild(grid);
