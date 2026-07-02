@@ -229,7 +229,8 @@ kbd {
 .cm-editor { min-height: 180px; font-size: 15px; background: var(--bg); }
 .cm-editor .cm-content, .cm-editor .cm-gutters { font-family: var(--mono); }
 .cm-editor.cm-focused { outline: none; }
-.cm-gutters { background: var(--bg); color: var(--dim); border-right: 1px solid var(--border); }
+/* Gutter colors live in an EditorView.theme() in editor.ts — plain CSS
+   loses to CodeMirror's injected base theme. */
 .cm-activeLine { background: rgba(255, 255, 255, 0.03); }
 
 /* Task highlights: green cell to reach, red text to remove or change,
@@ -269,8 +270,8 @@ kbd {
   text-align: right;
   padding: 0 8px 0 5px;
 }
-.lv-lnr { color: var(--dim); opacity: 0.75; }
-.lv-lnr-current { color: var(--text); font-weight: 700; opacity: 1; }
+.lv-lnr { color: var(--dim); }
+.lv-lnr-current { color: var(--text); font-weight: 700; }
 
 .status-bar {
   display: flex;

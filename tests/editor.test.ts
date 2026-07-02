@@ -36,30 +36,50 @@ describe("createEditor", () => {
     ed.destroy();
   });
 
-  it("renders the green target cell and red marks", () => {
+  it("renders the green target cell and diff-derived red marks", () => {
     const ed = createEditor({
       parent,
-      doc: "hello world",
+      doc: "junk hello world",
       target: { line: 0, col: 6 },
-      marks: [{ line: 0, from: 0, to: 5 }],
+      targetText: "hello world",
     });
     expect(parent.querySelector(".lv-target")).not.toBeNull();
-    expect(parent.querySelector(".lv-mark")).not.toBeNull();
+    expect(parent.querySelector(".lv-mark")!.textContent).toBe("junk ");
     ed.destroy();
   });
 
-  it("drops a mark decoration once its text is deleted", () => {
+  it("shrinks the red mark as junk is deleted and drops it when done", () => {
     const ed = createEditor({
       parent,
-      doc: "xhello",
+      doc: "xyhello",
       cursor: { line: 0, col: 0 },
-      marks: [{ line: 0, from: 0, to: 1 }],
+      targetText: "hello",
     });
     ed.focus();
+    expect(parent.querySelector(".lv-mark")!.textContent).toBe("xy");
+    press("x");
+    expect(parent.querySelector(".lv-mark")!.textContent).toBe("y");
     press("x");
     expect(ed.getText()).toBe("hello");
     expect(parent.querySelector(".lv-mark")).toBeNull();
     ed.destroy();
+  });
+
+  it("ghosts missing text where it belongs", () => {
+    const ed = createEditor({ parent, doc: "hello wrld", targetText: "hello world" });
+    expect(parent.querySelector(".lv-ghost")!.textContent).toBe("o");
+    expect(parent.querySelector(".lv-mark")).toBeNull();
+    ed.destroy();
+  });
+
+  it("ghosts a whole missing line and reds a surplus line", () => {
+    const missing = createEditor({ parent, doc: "a\nc", targetText: "a\nb\nc" });
+    expect(parent.querySelector(".lv-ghost")!.textContent).toBe("⏎b");
+    missing.destroy();
+
+    const surplus = createEditor({ parent, doc: "a\nJUNK\nc", targetText: "a\nc" });
+    expect(parent.querySelector(".lv-mark")!.textContent).toBe("JUNK");
+    surplus.destroy();
   });
 
   it("renders hybrid line numbers: absolute on the cursor line, relative elsewhere", () => {
@@ -82,14 +102,12 @@ describe("createEditor", () => {
     ed.destroy();
   });
 
-  it("renders ghost text and focus marks", () => {
+  it("renders focus marks", () => {
     const ed = createEditor({
       parent,
       doc: "hello world",
-      ghost: { line: 0, col: 5, text: " foo" },
       marks: [{ line: 0, from: 0, to: 5, kind: "focus" }],
     });
-    expect(parent.querySelector(".lv-ghost")!.textContent).toBe(" foo");
     expect(parent.querySelector(".lv-focus")).not.toBeNull();
     expect(parent.querySelector(".lv-mark")).toBeNull();
     ed.destroy();

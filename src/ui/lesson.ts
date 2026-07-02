@@ -178,7 +178,7 @@ export function renderLesson(app: HTMLElement, lesson: Lesson): () => void {
       cursor: task.startCursor,
       target: task.targetCursor,
       marks: task.marks,
-      ghost: task.ghost,
+      targetText: task.targetText,
       onKey: () => {
         drill.recordKey();
         kcountEl.textContent = `${drill.keystrokes} keys`;

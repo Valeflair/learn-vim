@@ -10,10 +10,11 @@ import {
 } from "@codemirror/view";
 import type { DecorationSet } from "@codemirror/view";
 import { EditorState, EditorSelection, StateField } from "@codemirror/state";
+import type { Range } from "@codemirror/state";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { vim, getCM } from "@replit/codemirror-vim";
 import { formatKey } from "./keys";
-import type { Cursor, TaskGhost, TaskMark } from "../lessons/types";
+import type { Cursor, TaskMark } from "../lessons/types";
 
 export type EditorHandle = {
   getText(): string;
@@ -29,10 +30,14 @@ export type EditorOptions = {
   cursor?: Cursor;
   /** Green cell the cursor should land on (motion tasks). */
   target?: Cursor;
-  /** Red = text to delete or change; blue = the line/span to act on. */
+  /** Blue "focus" spans to act on; red/ghost highlights come from the diff. */
   marks?: TaskMark[];
-  /** Missing text rendered as a green dashed box at its insertion point. */
-  ghost?: TaskGhost;
+  /**
+   * The text the task should end at. The editor live-diffs the document
+   * against it on every change: surplus text is marked red, missing text
+   * shows as a green dashed ghost — solved parts disappear as you go.
+   */
+  targetText?: string;
   onKey?: (key: string) => void;
   onChange?: () => void;
   onModeChange?: (mode: string) => void;
@@ -53,7 +58,7 @@ class GhostWidget extends WidgetType {
   override toDOM(): HTMLElement {
     const el = document.createElement("span");
     el.className = "lv-ghost";
-    el.textContent = this.text;
+    el.textContent = this.text.replace(/\n/g, "⏎");
     return el;
   }
   override ignoreEvent(): boolean {
@@ -104,15 +109,11 @@ function taskDecorations(state: EditorState, opts: EditorOptions): DecorationSet
   const ranges = [];
   if (opts.marks) {
     for (const m of opts.marks) {
+      if (m.kind !== "focus") continue;
       const { from } = posAt(state.doc, m.line, m.from);
       const { from: to } = posAt(state.doc, m.line, m.to);
-      const deco = m.kind === "focus" ? focusMark : editMark;
-      if (from < to) ranges.push(deco.range(from, to));
+      if (from < to) ranges.push(focusMark.range(from, to));
     }
-  }
-  if (opts.ghost) {
-    const { from } = posAt(state.doc, opts.ghost.line, opts.ghost.col);
-    ranges.push(Decoration.widget({ widget: new GhostWidget(opts.ghost.text), side: 1 }).range(from));
   }
   if (opts.target) {
     const { from, to } = posAt(state.doc, opts.target.line, opts.target.col);
@@ -122,26 +123,113 @@ function taskDecorations(state: EditorState, opts: EditorOptions): DecorationSet
   return Decoration.set(ranges, true);
 }
 
+/** Longest common prefix/suffix: a[s,ea) differs from b[s,eb). */
+function charDiff(a: string, b: string): [number, number, number] {
+  let s = 0;
+  const max = Math.min(a.length, b.length);
+  while (s < max && a[s] === b[s]) s++;
+  let ea = a.length;
+  let eb = b.length;
+  while (ea > s && eb > s && a[ea - 1] === b[eb - 1]) {
+    ea--;
+    eb--;
+  }
+  return [s, ea, eb];
+}
+
+/**
+ * What's still wrong: red marks on text the target doesn't have, ghost
+ * widgets for text the document is still missing. Recomputed on every
+ * change, so solved parts vanish and ghosts shrink while typing.
+ */
+function diffDecorations(doc: string, target: string): DecorationSet {
+  if (doc === target) return Decoration.none;
+  const ranges: Range<Decoration>[] = [];
+  const red = (from: number, to: number) => {
+    if (from < to) ranges.push(editMark.range(from, to));
+  };
+  const ghost = (at: number, text: string) => {
+    if (text) ranges.push(Decoration.widget({ widget: new GhostWidget(text), side: 1 }).range(at));
+  };
+
+  const A = doc.split("\n");
+  const B = target.split("\n");
+  const offA: number[] = [0];
+  for (const l of A) offA.push(offA[offA.length - 1] + l.length + 1);
+  let top = 0;
+  while (top < A.length && top < B.length && A[top] === B[top]) top++;
+  let bot = 0;
+  while (bot < A.length - top && bot < B.length - top && A[A.length - 1 - bot] === B[B.length - 1 - bot]) bot++;
+  const na = A.length - top - bot;
+  const nb = B.length - top - bot;
+
+  if (na === nb) {
+    // Same line count: a tight hunk per changed line.
+    for (let k = 0; k < na; k++) {
+      const [s, ea, eb] = charDiff(A[top + k], B[top + k]);
+      red(offA[top + k] + s, offA[top + k] + ea);
+      ghost(offA[top + k] + ea, B[top + k].slice(s, eb));
+    }
+  } else if (na === 0) {
+    // Whole lines missing: ghost them at the join point.
+    const text = B.slice(top, B.length - bot).join("\n");
+    if (top > 0) ghost(offA[top] - 1, "\n" + text);
+    else ghost(0, text + "\n");
+  } else if (nb === 0) {
+    // Surplus lines: all red.
+    red(offA[top], offA[A.length - bot] - 1);
+  } else {
+    // Line counts differ both ways (join/split): one hunk over everything.
+    const [s, ea, eb] = charDiff(doc, target);
+    red(s, ea);
+    ghost(ea, target.slice(s, eb));
+  }
+  return Decoration.set(ranges, true);
+}
+
 export function createEditor(opts: EditorOptions): EditorHandle {
   let mode = "normal";
 
-  // Highlights survive edits by mapping through changes; a deleted red mark
-  // collapses to nothing, which is exactly when it should disappear.
+  // Focus spans and the target cell survive edits by mapping through changes.
   const taskField = StateField.define<DecorationSet>({
     create: (state) => taskDecorations(state, opts),
     update: (deco, tr) => (tr.docChanged ? deco.map(tr.changes) : deco),
     provide: (f) => EditorView.decorations.from(f),
   });
 
+  // Red junk / green ghosts: a live diff against the target text.
+  const target = opts.targetText;
+  const diffField =
+    target === undefined
+      ? []
+      : StateField.define<DecorationSet>({
+          create: (state) => diffDecorations(state.doc.toString(), target),
+          update: (deco, tr) => (tr.docChanged ? diffDecorations(tr.newDoc.toString(), target) : deco),
+          provide: (f) => EditorView.decorations.from(f),
+        });
+
   const state = EditorState.create({
     doc: opts.doc,
     extensions: [
       vim(), // must precede other keymaps
+      // Plain CSS can't override CodeMirror's injected base theme (its
+      // selectors have higher specificity) — the gutter stayed bright.
+      EditorView.theme(
+        {
+          ".cm-gutters": {
+            backgroundColor: "transparent",
+            color: "var(--dim)",
+            border: "none",
+          },
+        },
+        { dark: true },
+      ),
       hybridLineNumbers,
       history(),
       drawSelection(),
       highlightActiveLine(),
       taskField,
+      diffField,
       keymap.of([...defaultKeymap, ...historyKeymap]),
       EditorView.domEventHandlers({
         // No mouse in vim training: clicking focuses the editor but never
