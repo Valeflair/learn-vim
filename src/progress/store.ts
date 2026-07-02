@@ -1,14 +1,18 @@
-import type { Lesson } from "../lessons/types";
+const KEY = "learn-vim-progress-v2";
 
-const KEY = "learn-vim-progress-v1";
+export type DrillRecord = {
+  done: boolean;
+  bestTimeMs: number;
+  bestKeystrokes: number;
+};
 
 export type ProgressData = {
-  version: 1;
-  challenges: Record<string, { done: boolean; bestKeystrokes: number }>;
+  version: 2;
+  lessons: Record<string, DrillRecord>;
 };
 
 function empty(): ProgressData {
-  return { version: 1, challenges: {} };
+  return { version: 2, lessons: {} };
 }
 
 export function loadProgress(): ProgressData {
@@ -16,31 +20,36 @@ export function loadProgress(): ProgressData {
     const raw = localStorage.getItem(KEY);
     if (!raw) return empty();
     const data = JSON.parse(raw);
-    if (data?.version !== 1 || typeof data.challenges !== "object" || data.challenges === null) return empty();
+    if (data?.version !== 2 || typeof data.lessons !== "object" || data.lessons === null) return empty();
     return data;
   } catch {
     return empty();
   }
 }
 
-export function recordResult(challengeId: string, keystrokes: number): void {
+/** Record a finished drill; keeps the best time and best keystrokes separately. */
+export function recordResult(lessonId: string, timeMs: number, keystrokes: number): void {
   const data = loadProgress();
-  const prev = data.challenges[challengeId];
-  data.challenges[challengeId] = {
+  const prev = data.lessons[lessonId];
+  data.lessons[lessonId] = {
     done: true,
+    bestTimeMs: prev ? Math.min(prev.bestTimeMs, timeMs) : timeMs,
     bestKeystrokes: prev ? Math.min(prev.bestKeystrokes, keystrokes) : keystrokes,
   };
   localStorage.setItem(KEY, JSON.stringify(data));
 }
 
-export function isChallengeDone(id: string): boolean {
-  return loadProgress().challenges[id]?.done ?? false;
+export function lessonRecord(lessonId: string): DrillRecord | null {
+  return loadProgress().lessons[lessonId] ?? null;
 }
 
-export function lessonProgress(lesson: Lesson): "none" | "partial" | "done" {
-  const ids = lesson.steps.filter((s) => s.kind === "challenge").map((s) => s.id);
-  if (ids.length === 0) return "done";
-  const done = ids.filter(isChallengeDone).length;
-  if (done === 0) return "none";
-  return done === ids.length ? "done" : "partial";
+export function isLessonDone(lessonId: string): boolean {
+  return lessonRecord(lessonId)?.done ?? false;
+}
+
+export function formatTime(ms: number): string {
+  const totalSec = Math.floor(ms / 1000);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
