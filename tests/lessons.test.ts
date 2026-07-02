@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { lessons } from "../src/lessons/index";
-import { mulberry32 } from "../src/lessons/gen";
+import { mulberry32, SNIPPETS } from "../src/lessons/gen";
 import type { Cursor, Task } from "../src/lessons/types";
 
 function inBounds(text: string, c: Cursor): boolean {
@@ -15,14 +15,19 @@ function checkTask(t: Task, label: string): void {
   if (t.targetCursor) {
     expect(inBounds(t.targetText, t.targetCursor), `${label} targetCursor`).toBe(true);
   }
+  const lines = t.startText.split("\n");
   if (t.marks) {
-    const lines = t.startText.split("\n");
     for (const m of t.marks) {
       expect(m.line, `${label} mark line`).toBeLessThan(lines.length);
       expect(m.from, `${label} mark from`).toBeGreaterThanOrEqual(0);
       expect(m.to, `${label} mark to`).toBeGreaterThan(m.from);
       expect(m.to, `${label} mark to bounds`).toBeLessThanOrEqual(lines[m.line].length);
     }
+  }
+  if (t.ghost) {
+    expect(t.ghost.line, `${label} ghost line`).toBeLessThan(lines.length);
+    expect(t.ghost.col, `${label} ghost col`).toBeLessThanOrEqual(lines[t.ghost.line].length);
+    expect(t.ghost.text.length, `${label} ghost text`).toBeGreaterThan(0);
   }
   // The task must actually require something: a text change, a cursor move,
   // or a round-trip through insert mode.
@@ -34,8 +39,8 @@ function checkTask(t: Task, label: string): void {
 }
 
 describe("lesson data", () => {
-  it("has lessons in strictly ascending order with unique ids", () => {
-    expect(lessons.length).toBe(18);
+  it("has 30 lessons in strictly ascending order with unique ids", () => {
+    expect(lessons.length).toBe(30);
     const ids = lessons.map((l) => l.id);
     expect(new Set(ids).size).toBe(ids.length);
     for (let i = 1; i < lessons.length; i++) {
@@ -56,14 +61,17 @@ describe("lesson data", () => {
     }
   });
 
-  it("every generator produces well-formed tasks across many seeds", () => {
+  it("every generator produces well-formed tasks for every snippet across many seeds", () => {
     for (const lesson of lessons) {
-      for (let seed = 1; seed <= 25; seed++) {
-        const rng = mulberry32(seed * 7919 + lesson.order);
-        lesson.generators.forEach((gen, gi) => {
-          checkTask(gen(rng), `${lesson.id} gen[${gi}] seed ${seed}`);
-        });
-      }
+      const pool = lesson.snippets ?? SNIPPETS;
+      pool.forEach((snippet, si) => {
+        for (let seed = 1; seed <= 25; seed++) {
+          const rng = mulberry32(seed * 7919 + lesson.order * 131 + si);
+          lesson.generators.forEach((gen, gi) => {
+            checkTask(gen(rng, snippet), `${lesson.id} gen[${gi}] snippet ${si} seed ${seed}`);
+          });
+        }
+      });
     }
   });
 });

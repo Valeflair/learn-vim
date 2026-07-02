@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { renderLesson } from "../src/ui/lesson";
 import { lessonRecord } from "../src/progress/store";
+import { lessons } from "../src/lessons/index";
 import type { Lesson } from "../src/lessons/types";
 
 // A deterministic drill: every task is "press x once" (drivable in jsdom).
@@ -81,6 +82,24 @@ describe("renderLesson", () => {
     const rec = lessonRecord("t-lesson");
     expect(rec?.done).toBe(true);
     expect(rec?.bestKeystrokes).toBe(2);
+  });
+
+  it("navigates between lessons with Ctrl+j and Ctrl+k", () => {
+    location.hash = "";
+    cleanup = renderLesson(app, lessons[1]);
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "j", ctrlKey: true }));
+    expect(location.hash).toBe(`#/lesson/${lessons[2].id}`);
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true }));
+    expect(location.hash).toBe(`#/lesson/${lessons[0].id}`);
+    // Without ctrl, j/k must stay ordinary vim keys.
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "j" }));
+    expect(location.hash).toBe(`#/lesson/${lessons[0].id}`);
+  });
+
+  it("shows the nav hotkey hints on the prev/next links", () => {
+    cleanup = renderLesson(app, lessons[1]);
+    expect(app.querySelector(".nav-prev .nav-hint")!.textContent).toContain("Ctrl+K");
+    expect(app.querySelector(".nav-next .nav-hint")!.textContent).toContain("Ctrl+J");
   });
 
   it("restart begins a fresh drill", async () => {

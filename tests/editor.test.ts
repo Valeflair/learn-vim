@@ -62,6 +62,39 @@ describe("createEditor", () => {
     ed.destroy();
   });
 
+  it("renders hybrid line numbers: absolute on the cursor line, relative elsewhere", () => {
+    const ed = createEditor({ parent, doc: "a\nb\nc\nd\ne", cursor: { line: 2, col: 0 } });
+    const nums = [...parent.querySelectorAll(".lv-lnr")].map((n) => n.textContent);
+    expect(nums).toEqual(["2", "1", "3", "1", "2"]);
+    expect(parent.querySelector(".lv-lnr-current")!.textContent).toBe("3");
+    ed.destroy();
+  });
+
+  it("updates the hybrid numbers when the cursor moves", () => {
+    const ed = createEditor({ parent, doc: "a\nb\nc\nd\ne", cursor: { line: 2, col: 0 } });
+    ed.focus();
+    // j/k are display motions and unreliable in jsdom; gg is line-wise.
+    press("g");
+    press("g");
+    const nums = [...parent.querySelectorAll(".lv-lnr")].map((n) => n.textContent);
+    expect(nums).toEqual(["1", "1", "2", "3", "4"]);
+    expect(parent.querySelector(".lv-lnr-current")!.textContent).toBe("1");
+    ed.destroy();
+  });
+
+  it("renders ghost text and focus marks", () => {
+    const ed = createEditor({
+      parent,
+      doc: "hello world",
+      ghost: { line: 0, col: 5, text: " foo" },
+      marks: [{ line: 0, from: 0, to: 5, kind: "focus" }],
+    });
+    expect(parent.querySelector(".lv-ghost")!.textContent).toBe(" foo");
+    expect(parent.querySelector(".lv-focus")).not.toBeNull();
+    expect(parent.querySelector(".lv-mark")).toBeNull();
+    ed.destroy();
+  });
+
   it("reports keystrokes and mode changes", () => {
     const keys: string[] = [];
     const modes: string[] = [];
