@@ -7,9 +7,8 @@ export const lesson: Lesson = {
   section: "Search",
   order: 20,
   intro: [
-    "`/` opens search: type a word, press `Enter`, and the cursor jumps to the next match. It is the universal long-range motion — when the target is far away, searching beats any number of `w`s and `j`s.",
-    "`n` repeats the search forward, `N` backwards. Search wraps around the end of the file, so you can never overshoot for good.",
-    "Type only as much as is unique: two or three characters usually suffice. Search is also a motion (`d/foo` exists), but first make jumping second nature.",
+    "`/` starts a search: type part of a word, press `Enter`, and the cursor jumps to the next match. `n` repeats forward, `N` backwards. Search wraps at the end of the file.",
+    "Two or three characters are usually enough.",
   ],
   keys: [
     { keys: "/{text}", label: "search forward for text" },

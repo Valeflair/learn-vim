@@ -7,9 +7,8 @@ export const lesson: Lesson = {
   section: "Essential Motions",
   order: 8,
   intro: [
-    "Capital `W`, `E`, and `B` move by **WORDs**: chunks separated only by whitespace. Where lowercase `w` stops at every dot and bracket in `cart.filter(x)`, `W` treats the whole thing as one hop.",
-    "Use lowercase when you want precision inside an expression, uppercase when you want to fly over it. In dense code the difference is several keystrokes per jump.",
-    "These tasks mix both: notice when the highlighted cell is easier to reach with `W` than with a series of `w`s.",
+    "`W`, `B` and `E` work like `w`, `b` and `e` but jump between chunks separated by whitespace: `cart.filter(x)` is one `W` jump and several `w` jumps.",
+    "Lowercase to move inside an expression, uppercase to skip over it.",
   ],
   keys: [
     { keys: "W", label: "start of next WORD" },

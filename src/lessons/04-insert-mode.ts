@@ -7,9 +7,8 @@ export const lesson: Lesson = {
   section: "Basics",
   order: 4,
   intro: [
-    "`i` inserts **before** the cursor, `a` (append) inserts **after** it. The distinction matters at every edit: to add text at the exact cursor position use `i`; to continue behind the current character use `a`.",
-    "The green dashed ghost box shows text that is missing from the snippet. Navigate to it with the motions you already know, enter insert mode, type exactly what the ghost shows, and press `Esc`.",
-    "Tip: most Vim users remap Caps Lock to Esc — the pinky reach to the real Esc key is the only bad part of this workflow.",
+    "`i` inserts before the cursor, `a` after it.",
+    "The dashed green box marks missing text. Move there, insert, type what it shows, then press `Esc`.",
   ],
   keys: [
     { keys: "i", label: "insert before the cursor" },

@@ -7,9 +7,8 @@ export const lesson: Lesson = {
   section: "Vertical Motions",
   order: 19,
   intro: [
-    "`}` jumps forward to the next blank line, `{` backwards to the previous one. In code, blank lines separate logical blocks — so these keys hop function by function, block by block.",
-    "They are coarse on purpose: use `{` `}` to get to the right neighborhood, then word motions and finds to land precisely.",
-    "They are also motions, so `d}` deletes to the end of the block. Here, just travel: land on the highlighted blank line.",
+    "`}` jumps to the next blank line, `{` to the previous one. In code that means block by block.",
+    "Both are motions, so `d}` deletes to the end of the block. Here, land on the marked blank line.",
   ],
   keys: [
     { keys: "}", label: "next blank line" },

@@ -7,9 +7,8 @@ export const lesson: Lesson = {
   section: "Insert Like a Pro",
   order: 6,
   intro: [
-    "`o` opens a new line **below** the cursor line and drops you straight into insert mode; `O` (capital) opens one **above**. No need to be at the start or end of the line first — they work from anywhere.",
-    "This replaces the dance of jumping to the line end, pressing Enter, and typing. One key, and you are exactly where the new line belongs.",
-    "The ghost shows a line that is missing. Put the cursor on the highlighted line, open in the right direction, type the missing line, then `Esc`.",
+    "`o` opens a new line below the cursor and enters insert mode. `O` opens one above. Both work from anywhere in the line.",
+    "Put the cursor on the marked line, open a line in the right direction, type the missing text, press `Esc`.",
   ],
   keys: [
     { keys: "o", label: "open a line below, insert" },

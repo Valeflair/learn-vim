@@ -7,9 +7,8 @@ export const lesson: Lesson = {
   section: "Essential Motions",
   order: 11,
   intro: [
-    "`t` (till) is `f`'s careful sibling: it stops **just before** the target character. `T` searches backwards and stops just after it.",
-    "Why stop short? Because of operators: `dt)` deletes everything up to — but not including — the closing paren. That is the edit you want far more often than eating the paren too.",
-    "`;` and `,` repeat till-motions exactly like find-motions. Practice both here; the green cell tells you whether `f` or `t` lands on it.",
+    "`t` works like `f` but stops one character before the target. `T` searches backwards. `;` and `,` repeat as usual.",
+    "Useful with operators: `dt)` deletes up to the closing paren without eating it.",
   ],
   keys: [
     { keys: "t{char}", label: "move till just before next {char}" },

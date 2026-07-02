@@ -7,9 +7,8 @@ export const lesson: Lesson = {
   section: "Search",
   order: 21,
   intro: [
-    "`*` searches for the **word under the cursor** — no typing at all. Cursor on a variable name, press `*`, and you jump to its next use. `#` does the same backwards.",
-    "It matches whole words only, so `count` will not stop inside `counter`. This is the fastest \"where else is this used?\" in Vim.",
-    "After a `*`, the ordinary `n` and `N` keep walking through the occurrences. Chase the highlighted occurrence in these tasks.",
+    "`*` searches for the word under the cursor, `#` backwards. Matches whole words only: `count` does not stop inside `counter`.",
+    "`n` and `N` walk through the matches afterwards.",
   ],
   keys: [
     { keys: "*", label: "next occurrence of word under cursor" },

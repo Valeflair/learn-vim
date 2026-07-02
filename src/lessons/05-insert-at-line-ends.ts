@@ -7,9 +7,8 @@ export const lesson: Lesson = {
   section: "Insert Like a Pro",
   order: 5,
   intro: [
-    "You almost never want to walk the cursor to the end of a line just to type there. `A` jumps to the end of the line **and** enters insert mode in one keystroke; `I` does the same at the first non-blank character.",
-    "Think of them as the capital, line-wide versions of `a` and `i`. They work from anywhere on the line — no motion needed first.",
-    "The ghost box shows what is missing. Restore line endings with `A` and line starts with `I`, then `Esc` back to normal mode.",
+    "`A` enters insert mode at the end of the line, `I` at the first non-blank character. Both work from anywhere on the line.",
+    "Restore missing line endings with `A` and missing line starts with `I`, then `Esc`.",
   ],
   keys: [
     { keys: "A", label: "append at end of line" },

@@ -7,9 +7,8 @@ export const lesson: Lesson = {
   section: "Vertical Motions",
   order: 17,
   intro: [
-    "The gutter shows **hybrid line numbers**: the cursor line has its absolute number in bold, every other line shows its distance from the cursor. That distance is exactly the count for `j` and `k`.",
-    "Target five lines down? The gutter already says `5` — press `5j`. No counting, no spamming `j`. One glance, one command.",
-    "This is how experienced Vim users move vertically nearly all the time. Train your eyes to read the relative number before your fingers move.",
+    "The gutter shows the cursor line's absolute number; every other line shows its distance from the cursor. That distance is the count for `j` or `k`.",
+    "A target five lines down reads `5`, so press `5j`.",
   ],
   keys: [
     { keys: "{n}j", label: "jump n lines down" },

@@ -7,9 +7,8 @@ export const lesson: Lesson = {
   section: "Text Objects",
   order: 24,
   intro: [
-    "Words and paragraphs are text objects too. You already met `daw` and `ciw`; the same grammar scales up: `ip` is the paragraph the cursor is in (the block between blank lines), `ap` includes the blank line after it.",
-    "`dip` deletes every line of the current block and leaves the blank separators. `dap` deletes the block **and** its trailing blank line — the whole logical unit disappears cleanly.",
-    "That is the full pattern: operator + `i`/`a` + object. Once it clicks, you can guess commands you have never typed before.",
+    "Paragraphs are text objects too: `ip` is the block between blank lines, `ap` includes the trailing blank line. `dip` clears the block, `dap` removes it entirely.",
+    "The pattern is always operator, `i` or `a`, object.",
   ],
   keys: [
     { keys: "daw", label: "delete a word" },

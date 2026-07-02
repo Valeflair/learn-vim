@@ -7,9 +7,8 @@ export const lesson: Lesson = {
   section: "Insert Like a Pro",
   order: 7,
   intro: [
-    "Three keys fix single-character mistakes without ever entering insert mode for long. `x` deletes the character under the cursor. `r` **replaces** it with the next key you type — perfect for typos, and you never leave normal mode.",
-    "`s` (substitute) deletes the character and enters insert mode, for when the fix is more than one character. And `~` toggles the case of the letter under the cursor.",
-    "Rule of thumb: one wrong character → `r`; one extra character → `x`; wrong character that needs several → `s`.",
+    "`x` deletes the character under the cursor. `r` replaces it with the next key you press. `s` deletes it and enters insert mode. `~` toggles its case.",
+    "Extra character: `x`. Wrong character: `r`. Wrong and longer than one character: `s`.",
   ],
   keys: [
     { keys: "x", label: "delete character under cursor" },

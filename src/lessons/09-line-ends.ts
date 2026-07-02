@@ -7,9 +7,8 @@ export const lesson: Lesson = {
   section: "Essential Motions",
   order: 9,
   intro: [
-    "`0` jumps to the very first column of the line; `$` to the last character. Between them sits `^`: the first **non-blank** character, which in indented code is almost always where you actually want to go.",
-    "These are instant, no matter how long the line is. Combined with `j`/`k` they make a grid: line up or down, then snap to an edge.",
-    "Later these pay double: operators take them as ranges (`d$` deletes to the end of the line). Learn the motion now, get the operator for free.",
+    "`0` moves to the first column, `^` to the first non-blank character, `$` to the last character of the line.",
+    "In indented code `^` is usually the one you want. Operators use these motions later: `d$` deletes to the end of the line.",
   ],
   keys: [
     { keys: "0", label: "first column of the line" },

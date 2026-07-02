@@ -7,9 +7,8 @@ export const lesson: Lesson = {
   section: "Operators",
   order: 12,
   intro: [
-    "Meet your first **operator**. Operators are verbs; motions are the range they act on. `d` + `w` = delete to the start of the next word. Every motion you have learned is now an edit.",
-    "`daw` (delete **a word**) is usually better than `dw`: it deletes the word under the cursor plus its space, from anywhere inside the word — no need to be on the first letter.",
-    "Counts multiply: `d2w` deletes two words in one command. The red highlight marks the stray text; remove it to restore the snippet.",
+    "`d` plus a motion deletes that range: `dw` deletes to the next word start, `d2w` two words.",
+    "`daw` deletes the word under the cursor plus one space and works from anywhere inside the word. Delete the red text to restore the snippet.",
   ],
   keys: [
     { keys: "dw", label: "delete to next word start" },

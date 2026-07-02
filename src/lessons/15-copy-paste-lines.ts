@@ -7,9 +7,8 @@ export const lesson: Lesson = {
   section: "Operators",
   order: 15,
   intro: [
-    "`y` (yank) is Vim's copy operator, and like `d` it doubles: `yy` yanks the whole line. `p` pastes the yanked line **below** the cursor line, `P` pastes it above.",
-    "Everything `d` deletes is also yanked — deleted text lands in the same register, so `dd` + `p` moves a line. For now, focus on `yy` and where `p` drops the copy.",
-    "The blue highlight marks the line to copy; the ghost marker shows where the copy belongs. Yank, travel, paste.",
+    "`yy` copies (yanks) the current line. `p` pastes it below the cursor line, `P` above.",
+    "The blue line is the one to copy; the ghost shows where the copy goes. Yank, travel, paste.",
   ],
   keys: [
     { keys: "yy", label: "yank (copy) the line" },

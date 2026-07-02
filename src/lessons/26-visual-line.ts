@@ -7,9 +7,8 @@ export const lesson: Lesson = {
   section: "Visual Mode",
   order: 26,
   intro: [
-    "`V` (capital) selects **whole lines**. `j` and `k` extend the selection line by line — perfect when the unit of work is lines, not characters.",
-    "This is the everyday way to grab a block: `V`, a few `j`s, then `d` to delete or `y` to yank. The selection can never end mid-line, so there is nothing to get wrong.",
-    "Combine with counts or `}`: `V}` selects to the end of the paragraph. Here: select exactly the highlighted lines and delete them.",
+    "`V` selects whole lines; `j` and `k` extend the selection. It cannot end mid-line.",
+    "Select exactly the marked lines and delete them with `d`.",
   ],
   keys: [
     { keys: "V", label: "start line-wise selection" },

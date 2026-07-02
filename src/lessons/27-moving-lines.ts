@@ -7,9 +7,8 @@ export const lesson: Lesson = {
   section: "Power Tools",
   order: 27,
   intro: [
-    "Deleting and pasting are two halves of **move**: `dd` puts the line in a register, `p` drops it below wherever you go. `ddp` — delete, paste — swaps a line with the one below it.",
-    "The register survives any motion in between, so `dd`, travel across the file, `p` relocates a line anywhere. `yy` instead of `dd` makes it a copy instead of a move.",
-    "The red or blue line is the one to move or copy; the ghost marker shows its destination.",
+    "`dd` followed by `p` somewhere else moves a line. `yy` instead of `dd` copies it. `ddp` swaps a line with the one below.",
+    "The marked line is the one to move or copy; the ghost shows the destination.",
   ],
   keys: [
     { keys: "dd p", label: "move a line (delete, travel, paste)" },

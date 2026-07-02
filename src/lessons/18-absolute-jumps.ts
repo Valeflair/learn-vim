@@ -7,9 +7,8 @@ export const lesson: Lesson = {
   section: "Vertical Motions",
   order: 18,
   intro: [
-    "`gg` jumps to the first line of the file, `G` to the last. With a count, `G` goes to that exact line: `5G` is line 5 — the move you want when a compiler error says \"line 5\".",
-    "All three land on the first non-blank character of the target line, so you arrive ready to read or edit.",
-    "Relative jumps for nearby lines, absolute jumps for far ends and known line numbers. Mix them here.",
+    "`gg` jumps to the first line, `G` to the last. With a count, `G` goes to that line: `5G` is line 5.",
+    "All three land on the first non-blank character. Relative jumps for nearby lines, absolute for the rest.",
   ],
   keys: [
     { keys: "gg", label: "first line" },

@@ -7,9 +7,8 @@ export const lesson: Lesson = {
   section: "Power Tools",
   order: 29,
   intro: [
-    "A **macro** records keystrokes and replays them. `qa` starts recording into register `a`, `q` stops, `@a` replays. Whatever you did — motions, edits, mode changes — happens again exactly.",
-    "The craft is making the recording **repeatable**: end it in a position where replaying makes sense, usually by finishing with a `j` to step to the next line. Then `@a` `@a` `@a` marches down the file. `@@` repeats the last replay.",
-    "Record the edit for the first line once, then replay it for the rest. If a recording goes wrong, `q` to stop, then just record `qa` again.",
+    "`qa` records your keystrokes into register `a`, `q` stops, `@a` plays them back, `@@` repeats the last playback.",
+    "Finish the recording with `j` so each playback continues on the next line. Edit the first line while recording, then replay for the rest.",
   ],
   keys: [
     { keys: "qa … q", label: "record keystrokes into register a" },

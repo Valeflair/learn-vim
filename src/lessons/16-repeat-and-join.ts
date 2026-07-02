@@ -7,9 +7,8 @@ export const lesson: Lesson = {
   section: "Operators",
   order: 16,
   intro: [
-    "`.` (the dot) repeats your last **change** — the whole thing, operator and range. Delete a word with `dw`, move somewhere else, press `.` and Vim deletes a word there too.",
-    "This turns repetitive cleanups into a rhythm: one careful edit, then motion–dot, motion–dot. The best Vim users think in dot-repeatable edits.",
-    "`J` joins the line below onto the current one with a single space. A sentence split across two lines becomes whole again with one keypress.",
+    "`.` repeats the last change, motion included: delete a word with `dw`, move elsewhere, press `.` to delete another.",
+    "`J` joins the next line onto the current one with a single space.",
   ],
   keys: [
     { keys: ".", label: "repeat the last change" },

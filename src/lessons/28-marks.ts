@@ -7,9 +7,8 @@ export const lesson: Lesson = {
   section: "Power Tools",
   order: 28,
   intro: [
-    "A **mark** is a named bookmark: `ma` remembers the current spot as mark `a`. Later, `'a` jumps back to that line (and `` `a `` to the exact column).",
-    "The pattern: mark where you are, go fix something far away, snap back with one keystroke. No scrolling, no re-finding your place.",
-    "You get 26 marks (`a`–`z`) per file. In practice two or three cover everything: one at the code you are writing, one at the thing you keep referencing.",
+    "`ma` sets mark `a` at the cursor. `'a` jumps back to that line, `` `a `` to the exact position.",
+    "Set a mark, edit somewhere else, jump back with one keystroke.",
   ],
   keys: [
     { keys: "ma", label: "set mark a at the cursor" },

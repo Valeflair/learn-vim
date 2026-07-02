@@ -7,9 +7,8 @@ export const lesson: Lesson = {
   section: "Essential Motions",
   order: 10,
   intro: [
-    "`f` + any character jumps the cursor **onto** the next occurrence of that character in the line. `F` searches backwards. It only looks within the current line — if the character is not there, the cursor stays put.",
-    "`;` repeats the last find in the same direction, `,` in the opposite one. So `f,` `;` `;` walks you comma by comma through an argument list.",
-    "This is the fastest way to reach punctuation: parens, quotes, commas, equals signs. Aim for the character, not the word around it.",
+    "`f` plus a character moves onto the next occurrence of that character in the line. `F` searches backwards. `;` repeats the jump, `,` reverses it.",
+    "Use it to reach punctuation directly: aim at the paren or comma instead of walking there word by word.",
   ],
   keys: [
     { keys: "f{char}", label: "jump onto next {char} in line" },

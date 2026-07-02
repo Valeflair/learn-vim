@@ -7,9 +7,8 @@ export const lesson: Lesson = {
   section: "Operators",
   order: 14,
   intro: [
-    "Doubling an operator makes it act on the whole line: `dd` deletes the cursor line, no matter where in the line you are. It is the fastest \"remove this line\" in any editor.",
-    "`D` (capital) deletes from the cursor to the end of the line — ideal for chopping off a junk tail while keeping the start. It is short for `d$`.",
-    "Line deletes take motions too: `dj` deletes the current line **and** the one below (delete + down). Two stray lines, one command.",
+    "`dd` deletes the current line, from anywhere in it. `D` deletes from the cursor to the end of the line (same as `d$`).",
+    "Motions work too: `dj` deletes this line and the one below.",
   ],
   keys: [
     { keys: "dd", label: "delete the whole line" },

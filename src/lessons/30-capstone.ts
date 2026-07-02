@@ -20,9 +20,8 @@ export const lesson: Lesson = {
   section: "Power Tools",
   order: 30,
   intro: [
-    "Everything, mixed: motions, small edits, operators, insert commands, and text objects — whatever the drill deals you.",
-    "Do not aim for speed first. Aim for the **right** command: the fix that takes one motion and one operator instead of five keys of improvisation. Speed follows accuracy.",
-    "Rerun this drill whenever you come back to practice; the tasks are different every time. Beat your best time and your best keystroke count.",
+    "Tasks from every lesson, mixed.",
+    "Prefer the shortest command over fast typing. Rerun for a new set of tasks.",
   ],
   keys: [
     { keys: "…", label: "everything you have learned" },

@@ -7,9 +7,8 @@ export const lesson: Lesson = {
   section: "Text Objects",
   order: 23,
   intro: [
-    "Strings get their own text objects: `di\"` deletes the contents of the double-quoted string the cursor is in, `ci\"` changes them, `da\"` removes the string including its quotes.",
-    "As with brackets, the cursor only needs to be **somewhere inside** — Vim finds the enclosing quotes for you. It even works with the cursor before the string on the same line.",
-    "`ci\"` is the classic: change a string literal without touching the quotes. You will use it daily.",
+    "`di\"` deletes the content of the surrounding double-quoted string, `ci\"` changes it, `da\"` deletes it with the quotes.",
+    "The cursor only has to be somewhere inside the string.",
   ],
   keys: [
     { keys: 'di"', label: "delete inside quotes" },
