@@ -1,72 +1,95 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { renderLesson } from "../src/ui/lesson";
-import { isChallengeDone } from "../src/progress/store";
+import { lessonRecord } from "../src/progress/store";
 import type { Lesson } from "../src/lessons/types";
 
+// A deterministic drill: every task is "press x once" (drivable in jsdom).
 const lesson: Lesson = {
   id: "t-lesson",
   title: "Test Lesson",
   section: "T",
   order: 1,
-  steps: [
-    { kind: "explanation", text: "Use `x` to delete." },
-    {
-      kind: "challenge",
-      id: "t-x",
-      instruction: "Delete the first character with `x`.",
+  intro: ["Use `x` to delete the character under the cursor."],
+  keys: [{ keys: "x", label: "delete character" }],
+  taskCount: 2,
+  generators: [
+    () => ({
+      instruction: "Delete the highlighted letter with `x`",
+      keyHint: "x",
       startText: "xhello",
       startCursor: { line: 0, col: 0 },
       targetText: "hello",
-      par: 1,
-      hint: "just press x",
-    },
+      marks: [{ line: 0, from: 0, to: 1 }],
+    }),
   ],
 };
 
 let app: HTMLElement;
+let cleanup: (() => void) | null = null;
+
 beforeEach(() => {
   localStorage.clear();
   document.body.innerHTML = '<div id="app"></div>';
   app = document.querySelector<HTMLElement>("#app")!;
 });
 
+afterEach(() => {
+  cleanup?.();
+  cleanup = null;
+});
+
 function press(key: string) {
   app.querySelector(".cm-content")!.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
 }
 
+const settle = () => new Promise((r) => setTimeout(r, 350));
+
 describe("renderLesson", () => {
-  it("shows explanation first with Continue, renders inline code", () => {
-    renderLesson(app, lesson);
-    expect(app.textContent).toContain("Use");
-    expect(app.querySelector(".instruction code, .explanation code")).not.toBeNull();
-    expect(app.querySelector("button.primary")!.textContent).toBe("Continue");
-  });
-
-  it("mounts editor on challenge step and solves via keystroke", () => {
-    renderLesson(app, lesson);
-    (app.querySelector("button.primary") as HTMLButtonElement).click();
+  it("keeps intro and key reference visible alongside the drill", () => {
+    cleanup = renderLesson(app, lesson);
+    expect(app.querySelector(".intro kbd")).not.toBeNull();
+    expect(app.querySelectorAll(".key-ref li").length).toBe(1);
     expect(app.querySelector(".cm-editor")).not.toBeNull();
-    press("x");
-    expect(app.querySelector(".solved")).not.toBeNull();
-    expect(isChallengeDone("t-x")).toBe(true);
+    expect(app.querySelector(".drill-count")!.textContent).toBe("Task 1 of 2");
+    expect(app.textContent).not.toContain("par");
   });
 
-  it("reset restores start state", () => {
-    renderLesson(app, lesson);
-    (app.querySelector("button.primary") as HTMLButtonElement).click();
+  it("shows the task instruction, key hint, and red mark", () => {
+    cleanup = renderLesson(app, lesson);
+    expect(app.querySelector(".task-instruction")!.textContent).toContain("Delete the highlighted letter");
+    expect(app.querySelector(".key-chip")!.textContent).toBe("x");
+    expect(app.querySelector(".lv-mark")).not.toBeNull();
+  });
+
+  it("counts keystrokes and starts the timer on the first key", () => {
+    cleanup = renderLesson(app, lesson);
     press("j");
-    const reset = [...app.querySelectorAll("button")].find((b) => b.textContent === "Reset")!;
-    reset.click();
-    expect(app.querySelector(".keys")!.textContent).toBe("");
-    expect(app.querySelector(".cm-content")!.textContent).toContain("xhello");
+    press("k");
+    expect(app.querySelector(".kcount")!.textContent).toBe("2 keys");
   });
 
-  it("skip advances without marking done", () => {
-    renderLesson(app, lesson);
-    (app.querySelector("button.primary") as HTMLButtonElement).click();
-    const skip = [...app.querySelectorAll("button")].find((b) => b.textContent === "Skip")!;
-    skip.click();
-    expect(app.textContent).toContain("Lesson complete");
-    expect(isChallengeDone("t-x")).toBe(false);
+  it("advances through tasks and records the result", async () => {
+    cleanup = renderLesson(app, lesson);
+    press("x");
+    expect(app.querySelector(".editor-wrap.solved")).not.toBeNull();
+    await settle();
+    expect(app.querySelector(".drill-count")!.textContent).toBe("Task 2 of 2");
+    press("x");
+    await settle();
+    expect(app.querySelector(".results")).not.toBeNull();
+    expect(app.querySelector(".drill-count")!.textContent).toBe("Drill complete");
+    const rec = lessonRecord("t-lesson");
+    expect(rec?.done).toBe(true);
+    expect(rec?.bestKeystrokes).toBe(2);
+  });
+
+  it("restart begins a fresh drill", async () => {
+    cleanup = renderLesson(app, lesson);
+    press("x");
+    await settle();
+    const restart = [...app.querySelectorAll("button")].find((b) => b.textContent!.includes("restart"))!;
+    restart.click();
+    expect(app.querySelector(".drill-count")!.textContent).toBe("Task 1 of 2");
+    expect(app.querySelector(".kcount")!.textContent).toBe("0 keys");
   });
 });

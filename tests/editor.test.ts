@@ -36,6 +36,32 @@ describe("createEditor", () => {
     ed.destroy();
   });
 
+  it("renders the green target cell and red marks", () => {
+    const ed = createEditor({
+      parent,
+      doc: "hello world",
+      target: { line: 0, col: 6 },
+      marks: [{ line: 0, from: 0, to: 5 }],
+    });
+    expect(parent.querySelector(".lv-target")).not.toBeNull();
+    expect(parent.querySelector(".lv-mark")).not.toBeNull();
+    ed.destroy();
+  });
+
+  it("drops a mark decoration once its text is deleted", () => {
+    const ed = createEditor({
+      parent,
+      doc: "xhello",
+      cursor: { line: 0, col: 0 },
+      marks: [{ line: 0, from: 0, to: 1 }],
+    });
+    ed.focus();
+    press("x");
+    expect(ed.getText()).toBe("hello");
+    expect(parent.querySelector(".lv-mark")).toBeNull();
+    ed.destroy();
+  });
+
   it("reports keystrokes and mode changes", () => {
     const keys: string[] = [];
     const modes: string[] = [];
