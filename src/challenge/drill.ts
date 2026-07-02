@@ -1,4 +1,4 @@
-import { mulberry32, shuffle } from "../lessons/gen";
+import { mulberry32, pick, shuffle, SNIPPETS } from "../lessons/gen";
 import type { Cursor, Lesson, Task } from "../lessons/types";
 
 export type DrillResult = { timeMs: number; keystrokes: number };
@@ -19,6 +19,9 @@ export class Drill {
 
   constructor(lesson: Lesson, seed: number) {
     const rng = mulberry32(seed);
+    // Every task of a run shares one base snippet; each task perturbs or
+    // targets a different spot in it (vim-hero style).
+    const base = pick(rng, lesson.snippets ?? SNIPPETS);
     const tasks: Task[] = [];
     // Cycle through the generators in a shuffled order so every drill mixes
     // the lesson's new keys with review, but no generator dominates.
@@ -29,7 +32,7 @@ export class Drill {
         order = shuffle(rng, lesson.generators);
         i = 0;
       }
-      tasks.push(order[i++](rng));
+      tasks.push(order[i++](rng, base));
     }
     this.tasks = tasks;
   }
