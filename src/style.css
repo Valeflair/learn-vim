@@ -232,7 +232,8 @@ kbd {
 .cm-gutters { background: var(--bg); color: var(--dim); border-right: 1px solid var(--border); }
 .cm-activeLine { background: rgba(255, 255, 255, 0.03); }
 
-/* Task highlights: green cell to reach, red text to remove or change. */
+/* Task highlights: green cell to reach, red text to remove or change,
+   blue span to act on, green dashed ghost for missing text. */
 .lv-target {
   background: var(--accent-dim);
   outline: 1px solid var(--accent);
@@ -244,6 +245,32 @@ kbd {
   border-bottom: 1px solid var(--mark);
   border-radius: 2px;
 }
+.lv-focus {
+  background: rgba(97, 175, 239, 0.14);
+  border-bottom: 1px solid var(--visual);
+  border-radius: 2px;
+}
+.lv-ghost {
+  display: inline-block;
+  white-space: pre;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border: 1px dashed var(--accent);
+  border-radius: 4px;
+  padding: 0 3px;
+  margin: 0 2px;
+  font-size: 0.9em;
+  line-height: 1.2;
+}
+
+/* Hybrid line numbers: bold absolute on the cursor line, relative elsewhere. */
+.cm-lineNumbers .cm-gutterElement {
+  min-width: 30px;
+  text-align: right;
+  padding: 0 8px 0 5px;
+}
+.lv-lnr { color: var(--dim); opacity: 0.75; }
+.lv-lnr-current { color: var(--text); font-weight: 700; opacity: 1; }
 
 .status-bar {
   display: flex;
@@ -311,8 +338,25 @@ button.ghost:hover { color: var(--text); }
   padding-top: 14px;
   border-top: 1px solid var(--border);
 }
-.lesson-nav a { color: var(--dim); text-decoration: none; font-size: 0.9rem; }
-.lesson-nav a:hover { color: var(--text); }
+.lesson-nav a {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 160px;
+  padding: 10px 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-decoration: none;
+}
+.lesson-nav a:hover { border-color: var(--dim); }
+.lesson-nav .nav-next { text-align: right; margin-left: auto; }
+.nav-hint { font-size: 0.72rem; color: var(--dim); }
+.nav-hint kbd { font-size: 0.72rem; padding: 0 4px; }
+.lesson-nav .nav-title { color: var(--accent); font-weight: 600; font-size: 0.92rem; }
+
+.undo-hint { font-size: 0.72rem; }
+.undo-hint kbd { font-size: 0.72rem; padding: 0 4px; }
 
 /* ------------------------------------------------------------ responsive */
 

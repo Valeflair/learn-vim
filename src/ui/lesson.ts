@@ -59,9 +59,35 @@ export function renderLesson(app: HTMLElement, lesson: Lesson): () => void {
 
   const nav = root.querySelector<HTMLElement>(".lesson-nav")!;
   nav.innerHTML = `
-    ${prev ? `<a class="nav-prev" href="#/lesson/${prev.id}">← ${prev.title}</a>` : "<span></span>"}
-    ${next ? `<a class="nav-next" href="#/lesson/${next.id}">${next.title} →</a>` : "<span></span>"}
+    ${
+      prev
+        ? `<a class="nav-prev" href="#/lesson/${prev.id}">
+             <span class="nav-hint">‹ Back <kbd>Ctrl+K</kbd></span>
+             <span class="nav-title">${prev.title}</span>
+           </a>`
+        : "<span></span>"
+    }
+    ${
+      next
+        ? `<a class="nav-next" href="#/lesson/${next.id}">
+             <span class="nav-hint">Next <kbd>Ctrl+J</kbd> ›</span>
+             <span class="nav-title">${next.title}</span>
+           </a>`
+        : "<span></span>"
+    }
   `;
+
+  // vim-hero's lesson hotkeys: Ctrl+j = next lesson, Ctrl+k = previous.
+  // Captured on window so the editor's vim handler never sees them.
+  function onHotkey(e: KeyboardEvent): void {
+    if (!e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
+    const to = e.key === "j" ? next : e.key === "k" ? prev : undefined;
+    if (!to) return;
+    e.preventDefault();
+    e.stopPropagation();
+    location.hash = `#/lesson/${to.id}`;
+  }
+  window.addEventListener("keydown", onHotkey, true);
 
   const countEl = root.querySelector<HTMLElement>(".drill-count")!;
   const dotsEl = root.querySelector<HTMLElement>(".drill-dots")!;
@@ -119,6 +145,7 @@ export function renderLesson(app: HTMLElement, lesson: Lesson): () => void {
         <span class="mode mode-normal">NORMAL</span>
         <span class="stat timer">00:00</span>
         <span class="stat kcount">0 keys</span>
+        <span class="stat undo-hint"><kbd>Esc</kbd> <kbd>u</kbd> to undo</span>
         <span class="spacer"></span>
         <button class="ghost reset-task" title="Reset this task">reset task</button>
         <button class="ghost restart" title="Restart the drill with new tasks">↻ restart</button>
@@ -151,6 +178,7 @@ export function renderLesson(app: HTMLElement, lesson: Lesson): () => void {
       cursor: task.startCursor,
       target: task.targetCursor,
       marks: task.marks,
+      ghost: task.ghost,
       onKey: () => {
         drill.recordKey();
         kcountEl.textContent = `${drill.keystrokes} keys`;
@@ -210,6 +238,7 @@ export function renderLesson(app: HTMLElement, lesson: Lesson): () => void {
 
   return () => {
     window.clearInterval(timerId);
+    window.removeEventListener("keydown", onHotkey, true);
     teardown();
   };
 }
