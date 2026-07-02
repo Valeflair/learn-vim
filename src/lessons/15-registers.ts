@@ -1,44 +1,21 @@
 import type { Lesson } from "./types";
+import { copyLineBelow, moveLineBelow, duplicateLine, swapLines } from "./gen";
 
 export const lesson: Lesson = {
   id: "15-registers",
-  title: "Registers (\"a \"0 \"_)",
-  section: "Power features",
+  title: "Moving Text Around",
+  section: "Power Tools",
   order: 15,
-  steps: [
-    {
-      kind: "explanation",
-      text: "Every yank and delete lands in the **unnamed register**, which `p` pastes. Prefix with `\"{letter}` to use a named register instead: `\"ayy` yanks a line into `a`, `\"ap` pastes it. Yanks also copy into register `0`, which deletes never touch — `\"0p` recovers your last yank after a delete clobbered the unnamed register. `\"_` is the black hole: `\"_dd` deletes without touching any register.",
-    },
-    {
-      kind: "challenge",
-      id: "15-named",
-      instruction: "Yank `alpha` into register `a` (`\"ayy`), move down, then paste it below `beta` with `\"ap`.",
-      startText: "alpha\nbeta",
-      startCursor: { line: 0, col: 0 },
-      targetText: "alpha\nbeta\nalpha",
-      par: 8,
-      hint: '"ayy j "ap',
-    },
-    {
-      kind: "challenge",
-      id: "15-yank-reg",
-      instruction: "Yank line 1, delete line 2 with `dd`, then paste the **yank** (not the delete) below using `\"0p`.",
-      startText: "paste me\ndelete me",
-      startCursor: { line: 0, col: 0 },
-      targetText: "paste me\npaste me",
-      par: 8,
-      hint: 'yy j dd "0p',
-    },
-    {
-      kind: "challenge",
-      id: "15-blackhole",
-      instruction: "Yank line 1, black-hole-delete line 2 with `\"_dd`, then paste with plain `p` — the yank survived.",
-      startText: "good line\ntrash line",
-      startCursor: { line: 0, col: 0 },
-      targetText: "good line\ngood line",
-      par: 8,
-      hint: 'yy j "_dd p',
-    },
+  intro: [
+    "Yank and delete both fill a **register** — Vim's clipboard — and `p` empties it wherever you are. That makes copy and move two sides of the same workflow: `yy` + travel + `p` copies a line, `dd` + travel + `p` moves it.",
+    "The register survives any amount of movement in between, so take the scenic route: search, `gg`, `12G` — the text stays with you until you put it.",
+    "These drills say things like \"move line 2 below line 5\". Cut or copy first, navigate second, paste last.",
   ],
+  keys: [
+    { keys: "yy … p", label: "copy a line somewhere else" },
+    { keys: "dd … p", label: "move a line somewhere else" },
+    { keys: "p / P", label: "put below-after / above-before" },
+  ],
+  taskCount: 10,
+  generators: [copyLineBelow(), moveLineBelow(), duplicateLine(), swapLines()],
 };

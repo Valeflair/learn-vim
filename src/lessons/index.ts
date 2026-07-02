@@ -26,3 +26,9 @@ export const lessons: Lesson[] = [
 export function getLesson(id: string): Lesson | undefined {
   return lessons.find((l) => l.id === id);
 }
+
+export function adjacentLessons(id: string): { prev?: Lesson; next?: Lesson } {
+  const i = lessons.findIndex((l) => l.id === id);
+  if (i < 0) return {};
+  return { prev: lessons[i - 1], next: lessons[i + 1] };
+}

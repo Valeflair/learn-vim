@@ -1,36 +1,22 @@
 import type { Lesson } from "./types";
+import { macroLines, dotRepeat } from "./gen";
 
 export const lesson: Lesson = {
   id: "17-macros",
-  title: "Macros (q @ @@)",
-  section: "Power features",
+  title: "Macros",
+  section: "Power Tools",
   order: 17,
-  steps: [
-    {
-      kind: "explanation",
-      text: "`q{letter}` starts recording your keystrokes into a register; `q` again stops. `@{letter}` replays them, `@@` replays the last-used macro. Record an edit that ends by moving to the next line, and one macro fixes a whole file.\n\nIf a recording goes wrong, hit Reset — it clears the editor state, including a half-recorded macro.",
-    },
-    {
-      kind: "challenge",
-      id: "17-basic",
-      instruction: "Turn every line into a list item: record `qa` → `I- <Esc>j` → `q` on the first line, then replay with `@a` three times.",
-      startText: "apple\nbanana\ncherry\ndate",
-      startCursor: { line: 0, col: 0 },
-      targetText: "- apple\n- banana\n- cherry\n- date",
-      requireNormal: true,
-      par: 14,
-      hint: "qa I- <Esc> j q, then @a @a @a",
-    },
-    {
-      kind: "challenge",
-      id: "17-atat",
-      instruction: "Append `;` to every line: record it once on line 1 (ending with `j`), replay with `@a`, then again with `@@`.",
-      startText: "let a = 1\nlet b = 2\nlet c = 3",
-      startCursor: { line: 0, col: 0 },
-      targetText: "let a = 1;\nlet b = 2;\nlet c = 3;",
-      requireNormal: true,
-      par: 11,
-      hint: "qa A; <Esc> j q, then @a, then @@",
-    },
+  intro: [
+    "A macro records your keystrokes and replays them. `qa` starts recording into register `a`, everything you type is captured, and `q` stops. `@a` replays the recording; `@@` repeats the last replay.",
+    "The craft is making the recording **repeatable**: end it in a position where playing it again does the next piece of work — usually by finishing with `j` (down one line) or a search.",
+    "Example: append `;` to five lines. Record once — `qa` `A` `;` `Esc` `j` `q` — then `4@a` finishes the rest.",
   ],
+  keys: [
+    { keys: "qa … q", label: "record keystrokes into register a" },
+    { keys: "@a", label: "replay the macro" },
+    { keys: "@@", label: "repeat the last replay" },
+    { keys: "{n}@a", label: "replay n times" },
+  ],
+  taskCount: 8,
+  generators: [macroLines("append"), macroLines("prefix"), dotRepeat()],
 };

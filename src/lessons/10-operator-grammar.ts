@@ -1,60 +1,21 @@
 import type { Lesson } from "./types";
+import { deleteTwoWords, deleteWord, dotRepeat, changeWord, deleteToEnd } from "./gen";
 
 export const lesson: Lesson = {
   id: "10-operator-grammar",
-  title: "Operator Grammar + the Dot Command",
+  title: "Operator Grammar",
   section: "Editing",
   order: 10,
-  steps: [
-    {
-      kind: "explanation",
-      text: "Vim commands compose: **operator + count + motion**. `d$` deletes to end of line, `c2w` changes two words, `df)` deletes through the next `)`. Any operator works with any motion you know — you already know dozens of combinations.",
-    },
-    {
-      kind: "challenge",
-      id: "10-d-dollar",
-      instruction: "Delete from the cursor to the end of the line.",
-      startText: "keep; remove all this",
-      startCursor: { line: 0, col: 5 },
-      targetText: "keep;",
-      par: 2,
-      hint: "d$ (or D — same thing)",
-    },
-    {
-      kind: "challenge",
-      id: "10-c2w",
-      instruction: "Change the first two words to `new`.",
-      startText: "very old broken code here",
-      startCursor: { line: 0, col: 0 },
-      targetText: "new broken code here",
-      requireNormal: true,
-      par: 7,
-      hint: "c2w new <Esc>",
-    },
-    {
-      kind: "challenge",
-      id: "10-df-paren",
-      instruction: "Delete everything through the closing `)` with `d` + `f)`.",
-      startText: "call(arg1, arg2) rest",
-      startCursor: { line: 0, col: 0 },
-      targetText: " rest",
-      par: 3,
-      hint: "df)",
-    },
-    {
-      kind: "explanation",
-      text: "The dot command `.` repeats your last change. Make an edit once, move somewhere else, press `.` — vim replays the whole edit. It's the cheapest automation in the editor.",
-    },
-    {
-      kind: "challenge",
-      id: "10-dot",
-      instruction: "Append `;` to both lines: do it once with `A`, then repeat it on the next line with `.`.",
-      startText: "const a = 1\nconst b = 2",
-      startCursor: { line: 0, col: 0 },
-      targetText: "const a = 1;\nconst b = 2;",
-      requireNormal: true,
-      par: 5,
-      hint: "A;<Esc> then j then .",
-    },
+  intro: [
+    "Vim commands follow a grammar: **operator + count + motion**. `d2w` reads \"delete two words\". Any operator combines with any motion you know: `d$`, `c3w`, `y}` — you never memorized those, you composed them.",
+    "`daw` is \"delete **a word**\" — a text object that grabs the word plus its surrounding space no matter where inside it your cursor sits. Compare with `dw`, which only deletes from the cursor forward.",
+    "The `.` key repeats your last change. Delete a word with `dw`, move somewhere else, press `.` — the same deletion happens again. One well-chosen edit plus `.` beats retyping every time.",
   ],
+  keys: [
+    { keys: "d{n}w", label: "delete n words" },
+    { keys: "daw", label: "delete a word (from anywhere inside it)" },
+    { keys: ".", label: "repeat the last change" },
+  ],
+  taskCount: 10,
+  generators: [deleteTwoWords(), deleteWord("daw"), dotRepeat(), changeWord(), deleteToEnd()],
 };

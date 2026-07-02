@@ -1,70 +1,22 @@
 import type { Lesson } from "./types";
-
-const CODE = [
-  "let count = 0;",
-  "function inc() {",
-  "  count += 1;",
-  "  return count;",
-  "}",
-  "function reset() {",
-  "  count = 0;",
-  "}",
-  "console.log(count);",
-].join("\n");
+import { searchWord, paraJump, gotoLine } from "./gen";
 
 export const lesson: Lesson = {
   id: "12-search",
-  title: "Search (/ ? n N * #)",
-  section: "Search",
+  title: "Search",
+  section: "Search & Objects",
   order: 12,
-  steps: [
-    {
-      kind: "explanation",
-      text: "`/pattern` + `Enter` jumps to the next match; `?pattern` searches backward. `n` repeats the search in the same direction, `N` in the opposite. `*` searches for the word under the cursor, `#` does the same backward. Every keystroke counts toward par — including the pattern and `Enter`.",
-    },
-    {
-      kind: "challenge",
-      id: "12-slash",
-      instruction: "Search for `count` with `/`.",
-      startText: CODE,
-      startCursor: { line: 0, col: 0 },
-      targetText: CODE,
-      targetCursor: { line: 0, col: 4 },
-      par: 7,
-      hint: "/count<CR> — 7 keystrokes",
-    },
-    {
-      kind: "challenge",
-      id: "12-n",
-      instruction: "Jump to the `count` inside `reset` (line 7) using `/` and `n`.",
-      startText: CODE,
-      startCursor: { line: 0, col: 0 },
-      targetText: CODE,
-      targetCursor: { line: 6, col: 2 },
-      par: 10,
-      hint: "/count<CR> then n n n",
-    },
-    {
-      kind: "challenge",
-      id: "12-star",
-      instruction: "The cursor is on `count`. Jump to the next occurrence with `*`.",
-      startText: CODE,
-      startCursor: { line: 0, col: 4 },
-      targetText: CODE,
-      targetCursor: { line: 2, col: 2 },
-      par: 1,
-      hint: "*",
-    },
-    {
-      kind: "challenge",
-      id: "12-hash",
-      instruction: "The cursor is on the last `count`. Jump to the previous occurrence with `#`.",
-      startText: CODE,
-      startCursor: { line: 8, col: 12 },
-      targetText: CODE,
-      targetCursor: { line: 6, col: 2 },
-      par: 1,
-      hint: "#",
-    },
+  intro: [
+    "The fastest way to a distant word is to search for it. `/pattern` then `Enter` jumps forward to the next match; `n` repeats the search, `N` goes the other way.",
+    "Even faster when the word is already under your cursor: `*` searches **forward** for the word under the cursor, `#` searches backward. No typing the word at all.",
+    "In these drills, put the cursor on a highlighted word and let `*` and `#` carry you between its occurrences.",
   ],
+  keys: [
+    { keys: "*", label: "search forward for the word under cursor" },
+    { keys: "#", label: "search backward for the word under cursor" },
+    { keys: "/pattern", label: "search forward for a pattern" },
+    { keys: "n / N", label: "next / previous match" },
+  ],
+  taskCount: 8,
+  generators: [searchWord("*"), searchWord("#"), paraJump(), gotoLine()],
 };
