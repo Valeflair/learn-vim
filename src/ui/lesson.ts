@@ -246,8 +246,9 @@ export function renderLesson(app: HTMLElement, lesson: Lesson, opts: LessonViewO
     const res = drill.result()!;
     const before = lessonRecord(lesson.id);
     recordResult(lesson.id, res.timeMs, res.keystrokes, opts.revised ?? false);
-    const newBestTime = !opts.revised && (!before || res.timeMs < before.bestTimeMs);
-    const newBestKeys = !opts.revised && (!before || res.keystrokes < before.bestKeystrokes);
+    const newBestTime = !opts.revised && (!before || before.bestTimeMs === null || res.timeMs < before.bestTimeMs);
+    const newBestKeys =
+      !opts.revised && (!before || before.bestKeystrokes === null || res.keystrokes < before.bestKeystrokes);
     renderRuns();
 
     body.innerHTML = `
@@ -264,7 +265,7 @@ export function renderLesson(app: HTMLElement, lesson: Lesson, opts: LessonViewO
           </div>
         </div>
         ${
-          before
+          before && before.bestTimeMs !== null
             ? `<p class="results-best">previous best: ${formatTime(before.bestTimeMs)} · ${before.bestKeystrokes} keys</p>`
             : ""
         }

@@ -67,6 +67,17 @@ describe("lesson data", () => {
       "Basics", "Insert Like a Pro", "Essential Motions", "Operators",
       "Vertical Motions", "Search", "Text Objects", "Visual Mode", "Power Tools",
     ]);
+    expect(chs.map((c) => c.slug)).toEqual([
+      "basics",
+      "insert-like-a-pro",
+      "essential-motions",
+      "operators",
+      "vertical-motions",
+      "search",
+      "text-objects",
+      "visual-mode",
+      "power-tools",
+    ]);
     expect(new Set(chs.map((c) => c.slug)).size).toBe(chs.length);
     expect(chs.flatMap((c) => c.lessons)).toEqual(lessons);
     expect(getChapter(chs[2].slug)?.name).toBe("Essential Motions");

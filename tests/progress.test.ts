@@ -32,6 +32,22 @@ describe("progress store", () => {
     expect(rec.runs![1]).toMatchObject({ timeMs: 50_000, keystrokes: 80, revised: true });
   });
 
+  it("does not seed bests when the first run recorded under an id is revised", () => {
+    recordResult("rev:x", 90_000, 120, true);
+    const rec = lessonRecord("rev:x")!;
+    expect(rec.done).toBe(true);
+    expect(rec.bestTimeMs).toBeNull();
+    expect(rec.bestKeystrokes).toBeNull();
+    expect(rec.runs).toHaveLength(1);
+    expect(rec.runs![0]).toMatchObject({ timeMs: 90_000, keystrokes: 120, revised: true });
+
+    recordResult("rev:x", 70_000, 100, false);
+    const rec2 = lessonRecord("rev:x")!;
+    expect(rec2.bestTimeMs).toBe(70_000);
+    expect(rec2.bestKeystrokes).toBe(100);
+    expect(rec2.runs).toHaveLength(2);
+  });
+
   it("survives corrupt data", () => {
     localStorage.setItem("learn-vim-progress-v2", "{not json");
     expect(loadProgress()).toEqual({ version: 2, lessons: {} });

@@ -38,7 +38,7 @@ export function renderHome(app: HTMLElement): void {
       card.innerHTML = `
         <span class="card-title"><span class="card-order">${String(lesson.order).padStart(2, "0")}</span> ${lesson.title}</span>
         <span class="card-keys">${keys}</span>
-        <span class="card-best">${rec?.done ? `✓ best ${formatTime(rec.bestTimeMs)} · ${rec.bestKeystrokes} keys` : `${lesson.taskCount} tasks`}</span>
+        <span class="card-best">${rec?.done && rec.bestTimeMs !== null ? `✓ best ${formatTime(rec.bestTimeMs)} · ${rec.bestKeystrokes} keys` : `${lesson.taskCount} tasks`}</span>
       `;
       grid.appendChild(card);
     }

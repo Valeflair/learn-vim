@@ -24,8 +24,8 @@ export class Drill {
     // targets a different spot in it (vim-hero style).
     const base = pick(rng, lesson.snippets ?? SNIPPETS);
     const tasks: Task[] = [];
-    // Cycle through the generators in a shuffled order so every drill mixes
-    // the lesson's new keys with review, but no generator dominates.
+    // Cycle through the generators in a shuffled order so no single
+    // generator dominates the run.
     let order = shuffle(rng, pool);
     let i = 0;
     while (tasks.length < lesson.taskCount) {

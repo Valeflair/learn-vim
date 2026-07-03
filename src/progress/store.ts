@@ -10,8 +10,9 @@ export type RunRecord = {
 
 export type DrillRecord = {
   done: boolean;
-  bestTimeMs: number;
-  bestKeystrokes: number;
+  /** null until a non-revised run sets a best. */
+  bestTimeMs: number | null;
+  bestKeystrokes: number | null;
   runs?: RunRecord[];
 };
 
@@ -47,12 +48,10 @@ export function recordResult(lessonId: string, timeMs: number, keystrokes: numbe
   const run: RunRecord = { at: Date.now(), timeMs, keystrokes };
   if (revised) run.revised = true;
   const runs = [...(prev?.runs ?? []), run].slice(-50);
-  let bestTimeMs = timeMs;
-  let bestKeystrokes = keystrokes;
-  if (prev) {
-    bestTimeMs = revised ? prev.bestTimeMs : Math.min(prev.bestTimeMs, timeMs);
-    bestKeystrokes = revised ? prev.bestKeystrokes : Math.min(prev.bestKeystrokes, keystrokes);
-  }
+  const bestTimeMs = revised ? (prev?.bestTimeMs ?? null) : Math.min(prev?.bestTimeMs ?? Infinity, timeMs);
+  const bestKeystrokes = revised
+    ? (prev?.bestKeystrokes ?? null)
+    : Math.min(prev?.bestKeystrokes ?? Infinity, keystrokes);
   data.lessons[lessonId] = { done: true, bestTimeMs, bestKeystrokes, runs };
   localStorage.setItem(KEY, JSON.stringify(data));
 }
