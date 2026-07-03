@@ -1,7 +1,7 @@
 import type { Lesson } from "../lessons/types";
 import { adjacentLessons, revisionGenerators } from "../lessons/index";
 import { createEditor, type EditorHandle } from "../engine/editor";
-import { Drill, randomSeed } from "../challenge/drill";
+import { Drill, randomSeed, charsWrong } from "../challenge/drill";
 import { recordResult, lessonRecord, formatTime } from "../progress/store";
 import { md } from "./md";
 
@@ -172,7 +172,7 @@ export function renderLesson(app: HTMLElement, lesson: Lesson): () => void {
         <span class="mode mode-normal">NORMAL</span>
         <span class="stat timer">00:00</span>
         <span class="stat kcount">0 keys</span>
-        <span class="stat undo-hint"><kbd>Esc</kbd> <kbd>u</kbd> to undo</span>
+        <span class="stat undo-hint hidden"><kbd>Esc</kbd> <kbd>u</kbd> to undo</span>
         <span class="spacer"></span>
         <button class="ghost reset-task" title="Reset this task">reset task</button>
         <button class="ghost restart" title="Restart the drill with new tasks">↻ restart</button>
@@ -184,9 +184,12 @@ export function renderLesson(app: HTMLElement, lesson: Lesson): () => void {
     timerEl = body.querySelector<HTMLElement>(".timer")!;
     timerEl.textContent = formatTime(drill.elapsedMs());
     kcountEl.textContent = `${drill.keystrokes} keys`;
+    const undoHintEl = body.querySelector<HTMLElement>(".undo-hint")!;
+    const baseline = charsWrong(task.startText, task.targetText);
 
     function checkNow(): void {
       if (advancing || !editor) return;
+      undoHintEl.classList.toggle("hidden", charsWrong(editor.getText(), task.targetText) <= baseline);
       if (drill.check(editor.getText(), editor.getCursor(), editor.getMode())) {
         advancing = true;
         wrap.classList.add("solved");

@@ -104,3 +104,16 @@ export class Drill {
 export function randomSeed(): number {
   return Math.floor(Math.random() * 0xffffffff);
 }
+
+/**
+ * How far a buffer is from a target: chars left in each after trimming the
+ * common prefix and suffix. Used to detect edits that made things worse.
+ */
+export function charsWrong(a: string, b: string): number {
+  const max = Math.min(a.length, b.length);
+  let p = 0;
+  while (p < max && a[p] === b[p]) p++;
+  let s = 0;
+  while (s < max - p && a[a.length - 1 - s] === b[b.length - 1 - s]) s++;
+  return a.length - p - s + (b.length - p - s);
+}

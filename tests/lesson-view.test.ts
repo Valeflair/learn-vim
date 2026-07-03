@@ -127,4 +127,22 @@ describe("renderLesson", () => {
     expect(app.querySelector(".drill-count")!.textContent).toBe("Task 1 of 2");
     expect(app.querySelector(".kcount")!.textContent).toBe("0 keys");
   });
+
+  it("shows the undo hint only after an edit made things worse", () => {
+    cleanup = renderLesson(app, lesson);
+    const hint = () => app.querySelector<HTMLElement>(".undo-hint")!;
+    expect(hint().classList.contains("hidden")).toBe(true);
+    press("x"); // solves task 1 — never worse than the start
+    expect(hint().classList.contains("hidden")).toBe(true);
+  });
+
+  it("reveals the undo hint after an edit that moves away from the target", () => {
+    cleanup = renderLesson(app, lesson);
+    // jsdom can't synthesize insert-mode typing (CodeMirror inserts text via
+    // input events), so make the buffer worse with a normal-mode replace.
+    press("l");
+    press("r");
+    press("z"); // "xhello" -> "xzello": further from "hello" than the start
+    expect(app.querySelector(".undo-hint")!.classList.contains("hidden")).toBe(false);
+  });
 });

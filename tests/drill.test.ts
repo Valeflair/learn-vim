@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { Drill } from "../src/challenge/drill";
+import { Drill, charsWrong } from "../src/challenge/drill";
 import type { Lesson, TaskGen } from "../src/lessons/types";
 
 const moveGen: TaskGen = () => ({
@@ -91,5 +91,22 @@ describe("Drill", () => {
     // Finished drills ignore further keys.
     drill.recordKey(9000);
     expect(drill.result()!.keystrokes).toBe(2);
+  });
+});
+
+describe("charsWrong", () => {
+  it("is 0 for identical strings", () => {
+    expect(charsWrong("hello", "hello")).toBe(0);
+  });
+  it("counts differing middles from both sides", () => {
+    expect(charsWrong("abc", "axc")).toBe(2);
+    expect(charsWrong("hello", "helo")).toBe(1);
+    expect(charsWrong("", "abc")).toBe(3);
+  });
+  it("grows when an edit moves away from the target", () => {
+    const target = "hello";
+    const baseline = charsWrong("xhello", target);
+    expect(charsWrong("zxhello", target)).toBeGreaterThan(baseline);
+    expect(charsWrong("hello", target)).toBeLessThan(baseline);
   });
 });
