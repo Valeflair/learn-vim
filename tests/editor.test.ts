@@ -82,6 +82,22 @@ describe("createEditor", () => {
     surplus.destroy();
   });
 
+  it("truncates long ghost text but keeps short ghosts whole", () => {
+    const long = createEditor({
+      parent,
+      doc: "a",
+      targetText: 'a\nconst demo = parseLine("mode,dark,wide");',
+    });
+    const ghost = parent.querySelector(".lv-ghost")!.textContent!;
+    expect(ghost.length).toBeLessThanOrEqual(24);
+    expect(ghost.endsWith("…")).toBe(true);
+    long.destroy();
+
+    const short = createEditor({ parent, doc: "a\nc", targetText: "a\nb\nc" });
+    expect(parent.querySelector(".lv-ghost")!.textContent).toBe("⏎b");
+    short.destroy();
+  });
+
   it("renders hybrid line numbers: absolute on the cursor line, relative elsewhere", () => {
     const ed = createEditor({ parent, doc: "a\nb\nc\nd\ne", cursor: { line: 2, col: 0 } });
     const nums = [...parent.querySelectorAll(".lv-lnr")].map((n) => n.textContent);

@@ -58,7 +58,9 @@ class GhostWidget extends WidgetType {
   override toDOM(): HTMLElement {
     const el = document.createElement("span");
     el.className = "lv-ghost";
-    el.textContent = this.text.replace(/\n/g, "⏎");
+    const text = this.text.replace(/\n/g, "⏎");
+    // Long ghosts (whole copied lines) only mark a position; cap the noise.
+    el.textContent = text.length > 24 ? text.slice(0, 21) + "…" : text;
     return el;
   }
   override ignoreEvent(): boolean {
