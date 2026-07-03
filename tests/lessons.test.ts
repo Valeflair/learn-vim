@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { lessons, revisionGenerators } from "../src/lessons/index";
+import { lessons, chapters, getChapter, chapterPool, cumulativePool } from "../src/lessons/index";
 import { mulberry32, SNIPPETS, SHORT_SNIPPETS } from "../src/lessons/gen";
 import type { Cursor, Task } from "../src/lessons/types";
 
@@ -61,17 +61,34 @@ describe("lesson data", () => {
     }
   });
 
-  it("revision pools grow with the lesson and skip custom-snippet lessons", () => {
-    const last = lessons[lessons.length - 1];
-    const pool = revisionGenerators(last);
-    expect(pool.length).toBeGreaterThan(last.generators.length);
-    // Custom-snippet lessons (macros) are unsafe on code snippets.
-    const custom = lessons.filter((l) => l.snippets);
-    expect(custom.length).toBeGreaterThan(0);
-    for (const l of custom) {
-      for (const g of l.generators) expect(pool).not.toContain(g);
+  it("chapters cover all lessons in order with unique slugs", () => {
+    const chs = chapters();
+    expect(chs.map((c) => c.name)).toEqual([
+      "Basics", "Insert Like a Pro", "Essential Motions", "Operators",
+      "Vertical Motions", "Search", "Text Objects", "Visual Mode", "Power Tools",
+    ]);
+    expect(new Set(chs.map((c) => c.slug)).size).toBe(chs.length);
+    expect(chs.flatMap((c) => c.lessons)).toEqual(lessons);
+    expect(getChapter(chs[2].slug)?.name).toBe("Essential Motions");
+    expect(getChapter("nope")).toBeUndefined();
+  });
+
+  it("revision pools are non-empty and skip custom-snippet lessons", () => {
+    for (const ch of chapters()) {
+      const own = chapterPool(ch);
+      const all = cumulativePool(ch);
+      expect(own.length, ch.slug).toBeGreaterThan(0);
+      expect(all.length, ch.slug).toBeGreaterThanOrEqual(own.length);
+      for (const l of lessons.filter((x) => x.snippets)) {
+        for (const g of l.generators) {
+          expect(own, ch.slug).not.toContain(g);
+          expect(all, ch.slug).not.toContain(g);
+        }
+      }
     }
-    expect(revisionGenerators(lessons[0])).toEqual([...lessons[0].generators]);
+    const last = chapters().at(-1)!;
+    const covered = lessons.filter((l) => !l.snippets).flatMap((l) => l.generators);
+    expect(cumulativePool(last)).toEqual(covered);
   });
 
   it("every generator produces well-formed tasks for every snippet across many seeds", () => {

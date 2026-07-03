@@ -45,11 +45,36 @@ export function adjacentLessons(id: string): { prev?: Lesson; next?: Lesson } {
   return { prev: lessons[i - 1], next: lessons[i + 1] };
 }
 
+export type Chapter = { name: string; slug: string; lessons: Lesson[] };
+
+function slugify(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+/** Lessons grouped by section, in curriculum order. */
+export function chapters(): Chapter[] {
+  const out: Chapter[] = [];
+  for (const lesson of lessons) {
+    const last = out[out.length - 1];
+    if (last?.name === lesson.section) last.lessons.push(lesson);
+    else out.push({ name: lesson.section, slug: slugify(lesson.section), lessons: [lesson] });
+  }
+  return out;
+}
+
+export function getChapter(slug: string): Chapter | undefined {
+  return chapters().find((c) => c.slug === slug);
+}
+
 /**
- * Revision pool: this lesson's generators plus everything from earlier
- * lessons. Restricted to lessons on the default snippet pool — generators
- * written for custom snippets (e.g. macros) aren't safe on code snippets.
+ * Revision pools exclude lessons on custom snippets — their generators
+ * (macros, o/O) aren't safe or sensible on the shared code snippets.
  */
-export function revisionGenerators(lesson: Lesson): readonly TaskGen[] {
-  return lessons.filter((l) => l.order <= lesson.order && !l.snippets).flatMap((l) => l.generators);
+export function chapterPool(ch: Chapter): TaskGen[] {
+  return ch.lessons.filter((l) => !l.snippets).flatMap((l) => l.generators);
+}
+
+export function cumulativePool(ch: Chapter): TaskGen[] {
+  const lastOrder = ch.lessons[ch.lessons.length - 1].order;
+  return lessons.filter((l) => l.order <= lastOrder && !l.snippets).flatMap((l) => l.generators);
 }
