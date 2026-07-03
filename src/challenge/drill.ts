@@ -1,5 +1,5 @@
 import { mulberry32, pick, shuffle, SNIPPETS } from "../lessons/gen";
-import type { Cursor, Lesson, Task, TaskGen } from "../lessons/types";
+import type { Cursor, Lesson, Task } from "../lessons/types";
 
 export type DrillResult = { timeMs: number; keystrokes: number };
 
@@ -17,13 +17,12 @@ export class Drill {
   private startedAt: number | null = null;
   private finishedAt: number | null = null;
 
-  constructor(lesson: Lesson, seed: number, generators?: readonly TaskGen[]) {
+  constructor(lesson: Lesson, seed: number) {
     const rng = mulberry32(seed);
-    // A custom pool (revision mode) is built for the default snippets.
-    const pool = generators ?? lesson.generators;
+    const pool = lesson.generators;
     // Every task of a run shares one base snippet; each task perturbs or
     // targets a different spot in it (vim-hero style).
-    const base = pick(rng, generators ? SNIPPETS : (lesson.snippets ?? SNIPPETS));
+    const base = pick(rng, lesson.snippets ?? SNIPPETS);
     const tasks: Task[] = [];
     // Cycle through the generators in a shuffled order so every drill mixes
     // the lesson's new keys with review, but no generator dominates.

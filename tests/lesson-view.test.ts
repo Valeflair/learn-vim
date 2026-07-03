@@ -90,7 +90,7 @@ describe("renderLesson", () => {
     expect(app.querySelector(".results")!.textContent).not.toContain("Next:");
   });
 
-  it("offers a revision rerun and lists previous runs", async () => {
+  it("lists previous runs and offers no per-lesson revision rerun", async () => {
     cleanup = renderLesson(app, lesson);
     expect(app.querySelector(".runs-list")!.textContent).toContain("no runs yet");
     press("x");
@@ -98,10 +98,8 @@ describe("renderLesson", () => {
     press("x");
     await settle();
     expect(app.querySelectorAll(".runs-list li").length).toBe(1);
-
-    const rev = app.querySelector<HTMLButtonElement>(".again-rev")!;
-    rev.click();
-    expect(app.querySelector(".drill-count")!.textContent).toContain("· revision");
+    expect(app.querySelector(".again-rev")).toBeNull();
+    expect(app.textContent).not.toContain("with revisions");
   });
 
   it("navigates between lessons with Ctrl+j and Ctrl+k", () => {
