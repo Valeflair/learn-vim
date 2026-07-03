@@ -165,7 +165,7 @@ export function renderLesson(app: HTMLElement, lesson: Lesson): () => void {
     body.innerHTML = `
       <div class="task-instruction">
         <span class="task-text">${md(task.instruction)}</span>
-        ${task.keyHint ? `<span class="key-chip">${task.keyHint}</span>` : ""}
+        ${task.keyHint ? `<button class="ghost hint-btn" title="Show which keys to use">hint?</button><span class="key-chip hidden">${task.keyHint}</span>` : ""}
       </div>
       <div class="editor-wrap"></div>
       <div class="status-bar">
@@ -223,6 +223,11 @@ export function renderLesson(app: HTMLElement, lesson: Lesson): () => void {
 
     body.querySelector(".reset-task")!.addEventListener("click", mountTask);
     body.querySelector(".restart")!.addEventListener("click", () => restart(revised));
+    const hintBtn = body.querySelector<HTMLButtonElement>(".hint-btn");
+    hintBtn?.addEventListener("click", () => {
+      body.querySelector(".key-chip")!.classList.remove("hidden");
+      hintBtn.classList.add("hidden");
+    });
     editor.focus();
   }
 

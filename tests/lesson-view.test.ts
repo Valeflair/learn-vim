@@ -55,11 +55,15 @@ describe("renderLesson", () => {
     expect(app.textContent).not.toContain("par");
   });
 
-  it("shows the task instruction, key hint, and red mark", () => {
+  it("hides the key hint until the hint button is clicked", () => {
     cleanup = renderLesson(app, lesson);
     expect(app.querySelector(".task-instruction")!.textContent).toContain("Delete the highlighted letter");
-    expect(app.querySelector(".key-chip")!.textContent).toBe("x");
     expect(app.querySelector(".lv-mark")).not.toBeNull();
+    const chip = app.querySelector<HTMLElement>(".key-chip")!;
+    expect(chip.classList.contains("hidden")).toBe(true);
+    app.querySelector<HTMLButtonElement>(".hint-btn")!.click();
+    expect(chip.classList.contains("hidden")).toBe(false);
+    expect(chip.textContent).toBe("x");
   });
 
   it("counts keystrokes and starts the timer on the first key", () => {
