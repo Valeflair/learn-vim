@@ -1,5 +1,5 @@
 import type { Lesson } from "./types";
-import { openLine } from "./gen";
+import { openLine, SHORT_SNIPPETS } from "./gen";
 
 export const lesson: Lesson = {
   id: "06-opening-new-lines",
@@ -8,7 +8,7 @@ export const lesson: Lesson = {
   order: 6,
   intro: [
     "`o` opens a new line below the cursor and enters insert mode. `O` opens one above. Both work from anywhere in the line.",
-    "Put the cursor on the marked line, open a line in the right direction, type the missing text, press `Esc`.",
+    "Put the cursor on the marked line, open a line in the right direction, type the short missing entry, press `Esc`.",
   ],
   keys: [
     { keys: "o", label: "open a line below, insert" },
@@ -16,4 +16,5 @@ export const lesson: Lesson = {
   ],
   taskCount: 8,
   generators: [openLine("o"), openLine("O")],
+  snippets: SHORT_SNIPPETS,
 };

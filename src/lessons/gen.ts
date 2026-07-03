@@ -120,6 +120,14 @@ export const LIST_SNIPPETS: Snippet[] = [
   ["dark roast", "light roast", "cold brew", "flat white"],
 ];
 
+/** Short flat lines (≤16 chars, indent 0) for o/O drills: minimal typing. */
+export const SHORT_SNIPPETS: Snippet[] = [
+  ["mode: dark", "size: 14", "wrap: true", "ruler: off", "theme: mono"],
+  ["host: local", "port: 8080", "debug: false", "retry: 3", "log: warn"],
+  ["- eggs", "- flour", "- milk", "- sugar", "- salt", "- butter"],
+  ["step: fetch", "step: parse", "step: check", "step: build", "step: ship"],
+];
+
 /** Replacement / junk identifiers inserted into snippets. */
 const WORDS = [
   "widget", "cursor", "buffer", "margin", "render", "stream", "packet",

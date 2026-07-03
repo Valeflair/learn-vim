@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { lessons, revisionGenerators } from "../src/lessons/index";
-import { mulberry32, SNIPPETS } from "../src/lessons/gen";
+import { mulberry32, SNIPPETS, SHORT_SNIPPETS } from "../src/lessons/gen";
 import type { Cursor, Task } from "../src/lessons/types";
 
 function inBounds(text: string, c: Cursor): boolean {
@@ -85,6 +85,20 @@ describe("lesson data", () => {
           });
         }
       });
+    }
+  });
+
+  it("opening-new-lines uses short-line snippets so typing stays minimal", () => {
+    const l06 = lessons.find((l) => l.id === "06-opening-new-lines")!;
+    expect(l06.snippets).toBe(SHORT_SNIPPETS);
+    expect(SHORT_SNIPPETS.length).toBeGreaterThanOrEqual(4);
+    for (const snip of SHORT_SNIPPETS) {
+      expect(snip.length).toBeGreaterThanOrEqual(5);
+      for (const line of snip) {
+        expect(line.length).toBeLessThanOrEqual(16);
+        expect(line).toBe(line.trimStart());
+        expect(line.trim()).not.toBe("");
+      }
     }
   });
 });
