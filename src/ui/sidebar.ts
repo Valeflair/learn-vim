@@ -1,7 +1,7 @@
-import { lessons } from "../lessons/index";
+import { chapters } from "../lessons/index";
 import { isLessonDone } from "../progress/store";
 
-/** vim-hero-style curriculum nav: every lesson, grouped by section. */
+/** vim-hero-style curriculum nav: every lesson, grouped by chapter, plus a revision entry per chapter. */
 export function renderSidebar(el: HTMLElement, currentId: string | null): void {
   el.innerHTML = "";
 
@@ -11,20 +11,14 @@ export function renderSidebar(el: HTMLElement, currentId: string | null): void {
   brand.textContent = "learn-vim";
   el.appendChild(brand);
 
-  const sections = new Map<string, typeof lessons>();
-  for (const lesson of lessons) {
-    if (!sections.has(lesson.section)) sections.set(lesson.section, []);
-    sections.get(lesson.section)!.push(lesson);
-  }
-
-  for (const [name, sectionLessons] of sections) {
+  for (const chapter of chapters()) {
     const h = document.createElement("h3");
-    h.textContent = name;
+    h.textContent = chapter.name;
     el.appendChild(h);
 
     const list = document.createElement("ul");
     list.className = "nav-list";
-    for (const lesson of sectionLessons) {
+    for (const lesson of chapter.lessons) {
       const li = document.createElement("li");
       const a = document.createElement("a");
       a.href = `#/lesson/${lesson.id}`;
@@ -34,6 +28,14 @@ export function renderSidebar(el: HTMLElement, currentId: string | null): void {
       li.appendChild(a);
       list.appendChild(li);
     }
+    const revId = `rev:${chapter.slug}`;
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = `#/revision/${chapter.slug}`;
+    a.className = revId === currentId ? "nav-link nav-revision current" : "nav-link nav-revision";
+    a.innerHTML = `<span class="nav-title">↻ Revision</span><span class="nav-check">${isLessonDone(revId) ? "✓" : ""}</span>`;
+    li.appendChild(a);
+    list.appendChild(li);
     el.appendChild(list);
   }
 }

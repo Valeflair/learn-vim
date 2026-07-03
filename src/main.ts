@@ -2,8 +2,9 @@ import "./style.css";
 import { parseRoute } from "./ui/router";
 import { renderHome } from "./ui/home";
 import { renderLesson } from "./ui/lesson";
+import { renderRevision } from "./ui/revision";
 import { renderSidebar } from "./ui/sidebar";
-import { getLesson } from "./lessons/index";
+import { getLesson, getChapter } from "./lessons/index";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 app.innerHTML = `<div class="shell"><aside class="sidebar"></aside><main class="main"></main></div>`;
@@ -25,6 +26,14 @@ function render(): void {
     }
     renderSidebar(sidebar, lesson.id);
     cleanup = renderLesson(main, lesson);
+  } else if (route.screen === "revision") {
+    const chapter = getChapter(route.chapterSlug);
+    if (!chapter) {
+      location.hash = "#/";
+      return;
+    }
+    renderSidebar(sidebar, `rev:${chapter.slug}`);
+    cleanup = renderRevision(main, chapter);
   } else {
     renderSidebar(sidebar, null);
     renderHome(main);

@@ -5,12 +5,23 @@ import { Drill, randomSeed, charsWrong } from "../challenge/drill";
 import { recordResult, lessonRecord, formatTime } from "../progress/store";
 import { md } from "./md";
 
+export type LessonViewOptions = {
+  /** Crumb line above the title; defaults to "Section · Lesson N". */
+  crumb?: string;
+  /** Record runs as revised: kept in history, excluded from bests. */
+  revised?: boolean;
+  /** Tag shown on revised runs in the history (default "revision"). */
+  revisedTag?: string;
+  /** Extra results-screen action (revision scope chooser). */
+  exit?: { label: string; onClick: () => void };
+};
+
 /**
  * Drill view: the lesson's explanation and key reference stay visible on the
  * left while ~10 randomized tasks run in the editor on the right, measured
  * by elapsed time and total keystrokes.
  */
-export function renderLesson(app: HTMLElement, lesson: Lesson): () => void {
+export function renderLesson(app: HTMLElement, lesson: Lesson, opts: LessonViewOptions = {}): () => void {
   let editor: EditorHandle | null = null;
   let drill = new Drill(lesson, randomSeed());
   let advancing = false;
@@ -22,7 +33,7 @@ export function renderLesson(app: HTMLElement, lesson: Lesson): () => void {
   root.className = "lesson";
   root.innerHTML = `
     <header class="lesson-header">
-      <p class="crumb">${lesson.section} · Lesson ${lesson.order}</p>
+      <p class="crumb">${opts.crumb ?? `${lesson.section} · Lesson ${lesson.order}`}</p>
       <h1>${lesson.title}</h1>
     </header>
     <div class="lesson-columns">
@@ -115,7 +126,7 @@ export function renderLesson(app: HTMLElement, lesson: Lesson): () => void {
               <span class="run-date">${new Date(r.at).toLocaleString([], { dateStyle: "short", timeStyle: "short" })}</span>
               <span class="run-time">${formatTime(r.timeMs)}</span>
               <span class="run-keys">${r.keystrokes} keys</span>
-              ${r.revised ? '<span class="run-rev">revision</span>' : ""}
+              ${r.revised ? `<span class="run-rev">${opts.revisedTag ?? "revision"}</span>` : ""}
             </li>`,
           )
           .join("")
@@ -234,9 +245,9 @@ export function renderLesson(app: HTMLElement, lesson: Lesson): () => void {
 
     const res = drill.result()!;
     const before = lessonRecord(lesson.id);
-    recordResult(lesson.id, res.timeMs, res.keystrokes);
-    const newBestTime = !before || res.timeMs < before.bestTimeMs;
-    const newBestKeys = !before || res.keystrokes < before.bestKeystrokes;
+    recordResult(lesson.id, res.timeMs, res.keystrokes, opts.revised ?? false);
+    const newBestTime = !opts.revised && (!before || res.timeMs < before.bestTimeMs);
+    const newBestKeys = !opts.revised && (!before || res.keystrokes < before.bestKeystrokes);
     renderRuns();
 
     body.innerHTML = `
@@ -259,10 +270,12 @@ export function renderLesson(app: HTMLElement, lesson: Lesson): () => void {
         }
         <div class="results-actions">
           <button class="primary again">↻ Run again</button>
+          ${opts.exit ? `<button class="exit-view">${opts.exit.label}</button>` : ""}
         </div>
       </div>
     `;
     body.querySelector(".again")!.addEventListener("click", () => restart());
+    body.querySelector<HTMLButtonElement>(".exit-view")?.addEventListener("click", () => opts.exit!.onClick());
   }
 
   mountTask();

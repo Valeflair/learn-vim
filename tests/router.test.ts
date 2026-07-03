@@ -11,4 +11,11 @@ describe("parseRoute", () => {
     expect(parseRoute("#/lesson/")).toEqual({ screen: "home" });
     expect(parseRoute("#/bogus/x")).toEqual({ screen: "home" });
   });
+  it("parses revision routes", () => {
+    expect(parseRoute("#/revision/essential-motions")).toEqual({
+      screen: "revision",
+      chapterSlug: "essential-motions",
+    });
+    expect(parseRoute("#/revision/")).toEqual({ screen: "home" });
+  });
 });

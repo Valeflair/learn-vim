@@ -421,6 +421,29 @@ button.ghost:hover { color: var(--text); }
 .undo-hint { font-size: 0.72rem; }
 .undo-hint kbd { font-size: 0.72rem; padding: 0 4px; }
 
+/* ------------------------------------------------------------- revision */
+
+.nav-revision .nav-title { color: var(--accent); font-style: italic; }
+
+.scope-cards { display: flex; gap: 16px; flex-wrap: wrap; }
+.scope-card {
+  flex: 1 1 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  text-align: left;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+}
+.scope-card:hover { border-color: var(--accent); background: var(--panel-2); }
+.scope-title { font-weight: 600; font-size: 1.05rem; color: var(--accent); }
+.scope-desc { font-size: 0.85rem; color: var(--dim); line-height: 1.5; }
+
 /* ------------------------------------------------------------ responsive */
 
 @media (max-width: 1000px) {
