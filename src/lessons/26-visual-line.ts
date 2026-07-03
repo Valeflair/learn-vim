@@ -1,5 +1,5 @@
 import type { Lesson } from "./types";
-import { visualDeleteLines, visualDeleteSpan } from "./gen";
+import { visualDeleteLines } from "./gen";
 
 export const lesson: Lesson = {
   id: "26-visual-line",
@@ -16,5 +16,5 @@ export const lesson: Lesson = {
     { keys: "d", label: "delete selected lines" },
   ],
   taskCount: 8,
-  generators: [visualDeleteLines(), visualDeleteSpan()],
+  generators: [visualDeleteLines()],
 };

@@ -1,5 +1,5 @@
 import type { Lesson } from "./types";
-import { markRoundTrip, gotoLine } from "./gen";
+import { markRoundTrip } from "./gen";
 
 export const lesson: Lesson = {
   id: "28-marks",
@@ -15,5 +15,5 @@ export const lesson: Lesson = {
     { keys: "'a", label: "jump to the line of mark a" },
   ],
   taskCount: 6,
-  generators: [markRoundTrip(), gotoLine()],
+  generators: [markRoundTrip()],
 };

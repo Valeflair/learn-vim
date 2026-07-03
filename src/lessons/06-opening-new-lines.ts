@@ -1,5 +1,5 @@
 import type { Lesson } from "./types";
-import { openLine, appendEnd } from "./gen";
+import { openLine } from "./gen";
 
 export const lesson: Lesson = {
   id: "06-opening-new-lines",
@@ -15,5 +15,5 @@ export const lesson: Lesson = {
     { keys: "O", label: "open a line above, insert" },
   ],
   taskCount: 8,
-  generators: [openLine("o"), openLine("O"), appendEnd()],
+  generators: [openLine("o"), openLine("O")],
 };

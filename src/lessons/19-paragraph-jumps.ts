@@ -1,5 +1,5 @@
 import type { Lesson } from "./types";
-import { paraJump, gotoLine, relativeJump } from "./gen";
+import { paraJump } from "./gen";
 
 export const lesson: Lesson = {
   id: "19-paragraph-jumps",
@@ -15,5 +15,5 @@ export const lesson: Lesson = {
     { keys: "{", label: "previous blank line" },
   ],
   taskCount: 8,
-  generators: [paraJump(), gotoLine(), relativeJump()],
+  generators: [paraJump()],
 };

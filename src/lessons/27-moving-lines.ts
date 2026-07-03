@@ -1,5 +1,5 @@
 import type { Lesson } from "./types";
-import { moveLineDown, moveLineTo, copyLineTo } from "./gen";
+import { moveLineDown, moveLineTo } from "./gen";
 
 export const lesson: Lesson = {
   id: "27-moving-lines",
@@ -16,5 +16,5 @@ export const lesson: Lesson = {
     { keys: "yy p", label: "copy a line elsewhere" },
   ],
   taskCount: 8,
-  generators: [moveLineDown(), moveLineTo(), copyLineTo()],
+  generators: [moveLineDown(), moveLineTo()],
 };

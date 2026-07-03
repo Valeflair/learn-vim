@@ -1,5 +1,5 @@
 import type { Lesson } from "./types";
-import { deleteWord, deleteTwoWords, deleteChar } from "./gen";
+import { deleteWord, deleteTwoWords } from "./gen";
 
 export const lesson: Lesson = {
   id: "12-delete-words",
@@ -16,5 +16,5 @@ export const lesson: Lesson = {
     { keys: "d2w", label: "delete two words" },
   ],
   taskCount: 10,
-  generators: [deleteWord("dw"), deleteWord("daw"), deleteTwoWords(), deleteChar()],
+  generators: [deleteWord("dw"), deleteWord("daw"), deleteTwoWords()],
 };

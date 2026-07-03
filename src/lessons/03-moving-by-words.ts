@@ -1,5 +1,5 @@
 import type { Lesson } from "./types";
-import { moveWordStart, moveWordEnd, gridMove } from "./gen";
+import { moveWordStart, moveWordEnd } from "./gen";
 
 export const lesson: Lesson = {
   id: "03-moving-by-words",
@@ -16,5 +16,5 @@ export const lesson: Lesson = {
     { keys: "e", label: "end of word ahead" },
   ],
   taskCount: 10,
-  generators: [moveWordStart(), moveWordEnd(), gridMove()],
+  generators: [moveWordStart(), moveWordEnd()],
 };

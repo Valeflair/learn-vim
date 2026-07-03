@@ -1,5 +1,5 @@
 import type { Lesson } from "./types";
-import { insertStart, appendEnd, insertMissing } from "./gen";
+import { insertStart, appendEnd } from "./gen";
 
 export const lesson: Lesson = {
   id: "05-insert-at-line-ends",
@@ -15,5 +15,5 @@ export const lesson: Lesson = {
     { keys: "I", label: "insert at first non-blank" },
   ],
   taskCount: 10,
-  generators: [insertStart(), appendEnd(), insertMissing()],
+  generators: [insertStart(), appendEnd()],
 };

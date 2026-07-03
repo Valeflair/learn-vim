@@ -1,5 +1,5 @@
 import type { Lesson } from "./types";
-import { deleteLine, deleteToEnd, deleteLinesDown, deleteWord } from "./gen";
+import { deleteLine, deleteToEnd, deleteLinesDown } from "./gen";
 
 export const lesson: Lesson = {
   id: "14-delete-lines",
@@ -16,5 +16,5 @@ export const lesson: Lesson = {
     { keys: "dj", label: "delete this line and the next" },
   ],
   taskCount: 10,
-  generators: [deleteLine(), deleteToEnd(), deleteLinesDown(), deleteWord("daw")],
+  generators: [deleteLine(), deleteToEnd(), deleteLinesDown()],
 };

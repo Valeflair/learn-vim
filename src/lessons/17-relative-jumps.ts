@@ -1,5 +1,5 @@
 import type { Lesson } from "./types";
-import { relativeJump, gridMove } from "./gen";
+import { relativeJump } from "./gen";
 
 export const lesson: Lesson = {
   id: "17-relative-jumps",
@@ -15,5 +15,5 @@ export const lesson: Lesson = {
     { keys: "{n}k", label: "jump n lines up" },
   ],
   taskCount: 10,
-  generators: [relativeJump(), gridMove()],
+  generators: [relativeJump()],
 };

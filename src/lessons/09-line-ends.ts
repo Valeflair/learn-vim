@@ -1,5 +1,5 @@
 import type { Lesson } from "./types";
-import { moveLineEdge, moveBigWord } from "./gen";
+import { moveLineEdge } from "./gen";
 
 export const lesson: Lesson = {
   id: "09-line-ends",
@@ -16,5 +16,5 @@ export const lesson: Lesson = {
     { keys: "$", label: "end of the line" },
   ],
   taskCount: 10,
-  generators: [moveLineEdge("0"), moveLineEdge("^"), moveLineEdge("$"), moveBigWord()],
+  generators: [moveLineEdge("0"), moveLineEdge("^"), moveLineEdge("$")],
 };

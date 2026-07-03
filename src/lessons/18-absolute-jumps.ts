@@ -1,5 +1,5 @@
 import type { Lesson } from "./types";
-import { gotoLine, relativeJump } from "./gen";
+import { gotoLine } from "./gen";
 
 export const lesson: Lesson = {
   id: "18-absolute-jumps",
@@ -16,5 +16,5 @@ export const lesson: Lesson = {
     { keys: "{n}G", label: "line n" },
   ],
   taskCount: 8,
-  generators: [gotoLine(), relativeJump()],
+  generators: [gotoLine()],
 };

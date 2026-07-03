@@ -1,5 +1,5 @@
 import type { Lesson } from "./types";
-import { moveBigWord, moveWordStart, moveWordEnd } from "./gen";
+import { moveBigWord } from "./gen";
 
 export const lesson: Lesson = {
   id: "08-moving-by-big-words",
@@ -16,5 +16,5 @@ export const lesson: Lesson = {
     { keys: "E", label: "end of WORD ahead" },
   ],
   taskCount: 8,
-  generators: [moveBigWord(), moveWordStart(), moveWordEnd()],
+  generators: [moveBigWord()],
 };

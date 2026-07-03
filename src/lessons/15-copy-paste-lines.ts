@@ -1,5 +1,5 @@
 import type { Lesson } from "./types";
-import { duplicateLine, copyLineTo, deleteLine } from "./gen";
+import { duplicateLine, copyLineTo } from "./gen";
 
 export const lesson: Lesson = {
   id: "15-copy-paste-lines",
@@ -16,5 +16,5 @@ export const lesson: Lesson = {
     { keys: "P", label: "paste above the cursor line" },
   ],
   taskCount: 8,
-  generators: [duplicateLine(), copyLineTo(), deleteLine()],
+  generators: [duplicateLine(), copyLineTo()],
 };

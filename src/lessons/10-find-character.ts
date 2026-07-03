@@ -1,5 +1,5 @@
 import type { Lesson } from "./types";
-import { findChar, moveLineEdge } from "./gen";
+import { findChar } from "./gen";
 
 export const lesson: Lesson = {
   id: "10-find-character",
@@ -16,5 +16,5 @@ export const lesson: Lesson = {
     { keys: ";", label: "repeat the last find" },
   ],
   taskCount: 10,
-  generators: [findChar("f"), findChar("F"), moveLineEdge("$")],
+  generators: [findChar("f"), findChar("F")],
 };

@@ -1,5 +1,5 @@
 import type { Lesson } from "./types";
-import { insertMissing, typeFresh, moveWordStart } from "./gen";
+import { insertMissing, typeFresh } from "./gen";
 
 export const lesson: Lesson = {
   id: "04-insert-mode",
@@ -16,5 +16,5 @@ export const lesson: Lesson = {
     { keys: "Esc", label: "back to normal mode" },
   ],
   taskCount: 8,
-  generators: [insertMissing(), typeFresh(), moveWordStart()],
+  generators: [insertMissing(), typeFresh()],
 };

@@ -1,5 +1,5 @@
 import type { Lesson } from "./types";
-import { searchWord, searchSlash } from "./gen";
+import { searchWord } from "./gen";
 
 export const lesson: Lesson = {
   id: "21-quick-word-search",
@@ -15,5 +15,5 @@ export const lesson: Lesson = {
     { keys: "#", label: "previous occurrence" },
   ],
   taskCount: 8,
-  generators: [searchWord("*"), searchWord("#"), searchSlash()],
+  generators: [searchWord("*"), searchWord("#")],
 };

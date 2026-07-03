@@ -1,5 +1,5 @@
 import type { Lesson } from "./types";
-import { visualDeleteSpan, changeWord } from "./gen";
+import { visualDeleteSpan } from "./gen";
 
 export const lesson: Lesson = {
   id: "25-visual-mode",
@@ -16,5 +16,5 @@ export const lesson: Lesson = {
     { keys: "o", label: "swap selection ends" },
   ],
   taskCount: 8,
-  generators: [visualDeleteSpan(), changeWord("ciw")],
+  generators: [visualDeleteSpan()],
 };

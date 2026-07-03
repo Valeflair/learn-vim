@@ -1,5 +1,5 @@
 import type { Lesson } from "./types";
-import { searchSlash, findChar } from "./gen";
+import { searchSlash } from "./gen";
 
 export const lesson: Lesson = {
   id: "20-search",
@@ -16,5 +16,5 @@ export const lesson: Lesson = {
     { keys: "N", label: "previous match" },
   ],
   taskCount: 8,
-  generators: [searchSlash(), findChar("f")],
+  generators: [searchSlash()],
 };

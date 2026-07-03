@@ -1,5 +1,5 @@
 import type { Lesson } from "./types";
-import { changeWord, deleteWord } from "./gen";
+import { changeWord } from "./gen";
 
 export const lesson: Lesson = {
   id: "13-change-words",
@@ -15,5 +15,5 @@ export const lesson: Lesson = {
     { keys: "ciw", label: "change the whole word" },
   ],
   taskCount: 10,
-  generators: [changeWord("cw"), changeWord("ciw"), deleteWord("dw")],
+  generators: [changeWord("cw"), changeWord("ciw")],
 };

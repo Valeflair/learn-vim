@@ -39,8 +39,8 @@ function checkTask(t: Task, label: string): void {
 }
 
 describe("lesson data", () => {
-  it("has 30 lessons in strictly ascending order with unique ids", () => {
-    expect(lessons.length).toBe(30);
+  it("has 29 lessons in strictly ascending order with unique ids", () => {
+    expect(lessons.length).toBe(29);
     const ids = lessons.map((l) => l.id);
     expect(new Set(ids).size).toBe(ids.length);
     for (let i = 1; i < lessons.length; i++) {

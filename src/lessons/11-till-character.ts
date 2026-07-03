@@ -1,5 +1,5 @@
 import type { Lesson } from "./types";
-import { tillChar, findChar } from "./gen";
+import { tillChar } from "./gen";
 
 export const lesson: Lesson = {
   id: "11-till-character",
@@ -16,5 +16,5 @@ export const lesson: Lesson = {
     { keys: ";", label: "repeat the last find or till" },
   ],
   taskCount: 10,
-  generators: [tillChar("t"), tillChar("T"), findChar("f")],
+  generators: [tillChar("t"), tillChar("T")],
 };
