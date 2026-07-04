@@ -157,7 +157,7 @@ function diffDecorations(doc: string, target: string): DecorationSet {
   const A = doc.split("\n");
   const B = target.split("\n");
   const offA: number[] = [0];
-  for (const l of A) offA.push(offA[offA.length - 1] + l.length + 1);
+  for (const l of A) offA.push(offA[offA.length - 1]! + l.length + 1);
   let top = 0;
   while (top < A.length && top < B.length && A[top] === B[top]) top++;
   let bot = 0;
@@ -168,18 +168,18 @@ function diffDecorations(doc: string, target: string): DecorationSet {
   if (na === nb) {
     // Same line count: a tight hunk per changed line.
     for (let k = 0; k < na; k++) {
-      const [s, ea, eb] = charDiff(A[top + k], B[top + k]);
-      red(offA[top + k] + s, offA[top + k] + ea);
-      ghost(offA[top + k] + ea, B[top + k].slice(s, eb));
+      const [s, ea, eb] = charDiff(A[top + k]!, B[top + k]!);
+      red(offA[top + k]! + s, offA[top + k]! + ea);
+      ghost(offA[top + k]! + ea, B[top + k]!.slice(s, eb));
     }
   } else if (na === 0) {
     // Whole lines missing: ghost them at the join point.
     const text = B.slice(top, B.length - bot).join("\n");
-    if (top > 0) ghost(offA[top] - 1, "\n" + text);
+    if (top > 0) ghost(offA[top]! - 1, "\n" + text);
     else ghost(0, text + "\n");
   } else if (nb === 0) {
     // Surplus lines: all red.
-    red(offA[top], offA[A.length - bot] - 1);
+    red(offA[top]!, offA[A.length - bot]! - 1);
   } else {
     // Line counts differ both ways (join/split): one hunk over everything.
     const [s, ea, eb] = charDiff(doc, target);

@@ -4,7 +4,7 @@ export type RunRecord = {
   at: number;
   timeMs: number;
   keystrokes: number;
-  /** Run mixed in tasks from earlier lessons; excluded from bests. */
+  /** Run was a chapter/cumulative revision drill, not the lesson itself; excluded from bests. */
   revised?: boolean;
 };
 
@@ -39,8 +39,8 @@ export function loadProgress(): ProgressData {
 
 /**
  * Record a finished drill: appends to the run history (capped) and keeps the
- * best time and best keystrokes separately. Revision runs mix in tasks from
- * earlier lessons, so they never update the bests of a normal run.
+ * best time and best keystrokes separately. Revision runs (chapter or
+ * cumulative pools) never update the bests of a normal lesson run.
  */
 export function recordResult(lessonId: string, timeMs: number, keystrokes: number, revised = false): void {
   const data = loadProgress();

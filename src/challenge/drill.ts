@@ -20,6 +20,7 @@ export class Drill {
   constructor(lesson: Lesson, seed: number) {
     const rng = mulberry32(seed);
     const pool = lesson.generators;
+    if (pool.length === 0) throw new Error(`Drill: lesson "${lesson.id}" has no task generators`);
     // Every task of a run shares one base snippet; each task perturbs or
     // targets a different spot in it (vim-hero style).
     const base = pick(rng, lesson.snippets ?? SNIPPETS);
@@ -33,7 +34,7 @@ export class Drill {
         order = shuffle(rng, pool);
         i = 0;
       }
-      tasks.push(order[i++](rng, base));
+      tasks.push(order[i++]!(rng, base));
     }
     this.tasks = tasks;
   }
@@ -45,7 +46,7 @@ export class Drill {
   }
 
   get current(): Task {
-    return this.tasks[Math.min(this.index, this.tasks.length - 1)];
+    return this.tasks[Math.min(this.index, this.tasks.length - 1)]!;
   }
 
   get taskIndex(): number {

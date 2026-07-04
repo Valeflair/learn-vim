@@ -28,7 +28,7 @@ describe("progress store", () => {
     expect(rec.bestTimeMs).toBe(90_000);
     expect(rec.bestKeystrokes).toBe(120);
     expect(rec.runs).toHaveLength(2);
-    expect(rec.runs![0].revised).toBeUndefined();
+    expect(rec.runs![0]!.revised).toBeUndefined();
     expect(rec.runs![1]).toMatchObject({ timeMs: 50_000, keystrokes: 80, revised: true });
   });
 

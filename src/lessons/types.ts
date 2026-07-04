@@ -52,7 +52,7 @@ export type Lesson = {
   keys: KeyDoc[];
   /** Number of tasks in one drill run. */
   taskCount: number;
-  /** Task generators: the lesson's new keys plus review of earlier ones. */
+  /** Task generators: only the keys this lesson teaches. */
   generators: TaskGen[];
   /** Base-text pool for drills; defaults to the shared code snippets. */
   snippets?: readonly (readonly string[])[];

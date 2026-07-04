@@ -75,6 +75,6 @@ export function chapterPool(ch: Chapter): TaskGen[] {
 }
 
 export function cumulativePool(ch: Chapter): TaskGen[] {
-  const lastOrder = ch.lessons[ch.lessons.length - 1].order;
+  const lastOrder = ch.lessons[ch.lessons.length - 1]!.order;
   return lessons.filter((l) => l.order <= lastOrder && !l.snippets).flatMap((l) => l.generators);
 }

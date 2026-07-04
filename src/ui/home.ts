@@ -1,4 +1,4 @@
-import { lessons } from "../lessons/index";
+import { lessons, chapters } from "../lessons/index";
 import { lessonRecord, formatTime } from "../progress/store";
 
 export function renderHome(app: HTMLElement): void {
@@ -16,20 +16,14 @@ export function renderHome(app: HTMLElement): void {
   `;
   app.appendChild(header);
 
-  const sections = new Map<string, typeof lessons>();
-  for (const lesson of lessons) {
-    if (!sections.has(lesson.section)) sections.set(lesson.section, []);
-    sections.get(lesson.section)!.push(lesson);
-  }
-
-  for (const [name, sectionLessons] of sections) {
+  for (const chapter of chapters()) {
     const h2 = document.createElement("h2");
-    h2.textContent = name;
+    h2.textContent = chapter.name;
     app.appendChild(h2);
 
     const grid = document.createElement("div");
     grid.className = "grid";
-    for (const lesson of sectionLessons) {
+    for (const lesson of chapter.lessons) {
       const rec = lessonRecord(lesson.id);
       const card = document.createElement("a");
       card.className = rec?.done ? "card card-done" : "card";

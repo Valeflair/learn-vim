@@ -104,18 +104,18 @@ describe("renderLesson", () => {
 
   it("navigates between lessons with Ctrl+j and Ctrl+k", () => {
     location.hash = "";
-    cleanup = renderLesson(app, lessons[1]);
+    cleanup = renderLesson(app, lessons[1]!);
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "j", ctrlKey: true }));
-    expect(location.hash).toBe(`#/lesson/${lessons[2].id}`);
+    expect(location.hash).toBe(`#/lesson/${lessons[2]!.id}`);
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true }));
-    expect(location.hash).toBe(`#/lesson/${lessons[0].id}`);
+    expect(location.hash).toBe(`#/lesson/${lessons[0]!.id}`);
     // Without ctrl, j/k must stay ordinary vim keys.
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "j" }));
-    expect(location.hash).toBe(`#/lesson/${lessons[0].id}`);
+    expect(location.hash).toBe(`#/lesson/${lessons[0]!.id}`);
   });
 
   it("shows the nav hotkey hints on the prev/next links", () => {
-    cleanup = renderLesson(app, lessons[1]);
+    cleanup = renderLesson(app, lessons[1]!);
     expect(app.querySelector(".nav-prev .nav-hint")!.textContent).toContain("Ctrl+K");
     expect(app.querySelector(".nav-next .nav-hint")!.textContent).toContain("Ctrl+J");
   });

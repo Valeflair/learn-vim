@@ -20,14 +20,14 @@ export function int(rng: Rng, min: number, max: number): number {
 }
 
 export function pick<T>(rng: Rng, arr: readonly T[]): T {
-  return arr[Math.floor(rng() * arr.length)];
+  return arr[Math.floor(rng() * arr.length)]!;
 }
 
 export function shuffle<T>(rng: Rng, arr: readonly T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
+    [a[i], a[j]] = [a[j]!, a[i]!];
   }
   return a;
 }
@@ -158,7 +158,7 @@ function isBlank(line: string): boolean {
 }
 
 function nonBlankLines(lines: Snippet): number[] {
-  return lines.map((_, i) => i).filter((i) => !isBlank(lines[i]));
+  return lines.map((_, i) => i).filter((i) => !isBlank(lines[i]!));
 }
 
 function indentOf(line: string): number {
@@ -168,7 +168,7 @@ function indentOf(line: string): number {
 /** Identifier spans on one line, at least minLen chars long. */
 function lineSpans(lines: Snippet, li: number, minLen = 3): Span[] {
   const spans: Span[] = [];
-  for (const m of lines[li].matchAll(WORD_RE)) {
+  for (const m of lines[li]!.matchAll(WORD_RE)) {
     if (m[0].length >= minLen) {
       spans.push({ line: li, from: m.index, to: m.index + m[0].length, word: m[0] });
     }
@@ -183,13 +183,13 @@ function allSpans(lines: Snippet, minLen = 3): Span[] {
 /** Spans that sit on a clean word boundary (start of line content or after a space). */
 function boundarySpans(lines: Snippet, minLen = 3): Span[] {
   return allSpans(lines, minLen).filter(
-    (s) => s.from === indentOf(lines[s.line]) || lines[s.line][s.from - 1] === " ",
+    (s) => s.from === indentOf(lines[s.line]!) || lines[s.line]![s.from - 1] === " ",
   );
 }
 
 function replaceRange(lines: Snippet, li: number, from: number, to: number, text: string): string[] {
   const out = [...lines];
-  out[li] = out[li].slice(0, from) + text + out[li].slice(to);
+  out[li] = out[li]!.slice(0, from) + text + out[li]!.slice(to);
   return out;
 }
 
@@ -247,8 +247,8 @@ export function gridMove(): TaskGen {
     const la = pick(rng, nb);
     const far = need(nb.filter((l) => Math.abs(l - la) >= 2), "gridMove far line");
     const lb = pick(rng, far);
-    const ca = int(rng, 0, Math.max(0, base[la].length - 1));
-    const cb = int(rng, indentOf(base[lb]), Math.max(0, base[lb].length - 1));
+    const ca = int(rng, 0, Math.max(0, base[la]!.length - 1));
+    const cb = int(rng, indentOf(base[lb]!), Math.max(0, base[lb]!.length - 1));
     return motionTask(base, { line: la, col: ca }, { line: lb, col: cb },
       "Move the cursor onto the highlighted cell", "hjkl");
   };
@@ -275,7 +275,7 @@ export function moveWordStart(): TaskGen {
     const spans = lineSpans(base, li);
     const i = int(rng, 0, spans.length - 1);
     const j = pick(rng, need(spans.map((_, k) => k).filter((k) => Math.abs(k - i) >= 2), "word target"));
-    return motionTask(base, { line: li, col: spans[i].from }, { line: li, col: spans[j].from },
+    return motionTask(base, { line: li, col: spans[i]!.from }, { line: li, col: spans[j]!.from },
       "Hop word by word to the highlighted cell", j > i ? "w" : "b");
   };
 }
@@ -289,7 +289,7 @@ export function moveWordEnd(): TaskGen {
     let i = int(rng, 0, spans.length - 1);
     let j = pick(rng, need(spans.map((_, k) => k).filter((k) => Math.abs(k - i) >= 2), "word target"));
     if (j < i) [i, j] = [j, i];
-    return motionTask(base, { line: li, col: spans[i].from }, { line: li, col: spans[j].to - 1 },
+    return motionTask(base, { line: li, col: spans[i]!.from }, { line: li, col: spans[j]!.to - 1 },
       "Land on the highlighted last letter using word-end hops", "e");
   };
 }
@@ -298,15 +298,15 @@ export function moveWordEnd(): TaskGen {
 export function moveBigWord(): TaskGen {
   return (rng, base) => {
     const wordsOf = (li: number) =>
-      [...base[li].matchAll(/\S+/g)].map((m) => ({ from: m.index, to: m.index + m[0].length }));
+      [...base[li]!.matchAll(/\S+/g)].map((m) => ({ from: m.index, to: m.index + m[0].length }));
     const lines = need(nonBlankLines(base).filter((li) => wordsOf(li).length >= 3), "WORD line");
     const li = pick(rng, lines);
     const words = wordsOf(li);
     const i = int(rng, 0, words.length - 1);
     const j = pick(rng, need(words.map((_, k) => k).filter((k) => k !== i), "WORD target"));
     const toEnd = j > i && rng() < 0.4;
-    const target = toEnd ? words[j].to - 1 : words[j].from;
-    return motionTask(base, { line: li, col: words[i].from }, { line: li, col: target },
+    const target = toEnd ? words[j]!.to - 1 : words[j]!.from;
+    return motionTask(base, { line: li, col: words[i]!.from }, { line: li, col: target },
       "Jump across whole WORDs (punctuation included) to the highlighted cell",
       j > i ? (toEnd ? "E" : "W") : "B");
   };
@@ -316,9 +316,9 @@ export function moveBigWord(): TaskGen {
 export function moveLineEdge(kind: "0" | "^" | "$"): TaskGen {
   return (rng, base) => {
     const ok = (li: number) =>
-      base[li].length >= 8 && (kind !== "^" || indentOf(base[li]) >= 2);
+      base[li]!.length >= 8 && (kind !== "^" || indentOf(base[li]!) >= 2);
     const li = pick(rng, need(nonBlankLines(base).filter(ok), `line for ${kind}`));
-    const line = base[li];
+    const line = base[li]!;
     const indent = indentOf(line);
     let from: number;
     let to: number;
@@ -345,8 +345,8 @@ export function moveLineEdge(kind: "0" | "^" | "$"): TaskGen {
 export function gotoLine(): TaskGen {
   return (rng, base) => {
     const nb = nonBlankLines(base);
-    const first = nb[0];
-    const last = nb[nb.length - 1];
+    const first = nb[0]!;
+    const last = nb[nb.length - 1]!;
     const kind = pick(rng, ["gg", "G", "nG"] as const);
     let target: number;
     let startLine: number;
@@ -368,7 +368,7 @@ export function gotoLine(): TaskGen {
       instruction = `Jump to line ${target + 1}`;
       keyHint = `${target + 1}G`;
     }
-    return motionTask(base, { line: startLine, col: 0 }, { line: target, col: indentOf(base[target]) },
+    return motionTask(base, { line: startLine, col: 0 }, { line: target, col: indentOf(base[target]!) },
       instruction, keyHint);
   };
 }
@@ -378,7 +378,7 @@ const PUNCT = new Set("=(){}[];.,*+<>|&\"'-".split(""));
 function punctuationAt(line: string): Map<string, number[]> {
   const occ = new Map<string, number[]>();
   for (let i = 1; i < line.length - 1; i++) {
-    const ch = line[i];
+    const ch = line[i]!;
     if (!PUNCT.has(ch)) continue;
     if (!occ.has(ch)) occ.set(ch, []);
     occ.get(ch)!.push(i);
@@ -389,22 +389,22 @@ function punctuationAt(line: string): Map<string, number[]> {
 /** f / F: land exactly on a character within the line. */
 export function findChar(kind: "f" | "F"): TaskGen {
   return (rng, base) => {
-    const lines = need(nonBlankLines(base).filter((li) => punctuationAt(base[li]).size > 0), "punct line");
+    const lines = need(nonBlankLines(base).filter((li) => punctuationAt(base[li]!).size > 0), "punct line");
     const li = pick(rng, lines);
-    const line = base[li];
+    const line = base[li]!;
     const occ = punctuationAt(line);
     if (kind === "F") {
-      const chars = need([...occ.keys()].filter((c) => occ.get(c)![occ.get(c)!.length - 1] < line.length - 1), "F char");
+      const chars = need([...occ.keys()].filter((c) => occ.get(c)![occ.get(c)!.length - 1]! < line.length - 1), "F char");
       const ch = pick(rng, chars);
       const idxs = occ.get(ch)!;
-      return motionTask(base, { line: li, col: line.length - 1 }, { line: li, col: idxs[idxs.length - 1] },
+      return motionTask(base, { line: li, col: line.length - 1 }, { line: li, col: idxs[idxs.length - 1]! },
         `Jump backwards onto the last \`${ch}\` in the line`, `F${ch}`);
     }
     const ch = pick(rng, [...occ.keys()]);
     const idxs = occ.get(ch)!;
     const nth = idxs.length > 1 && rng() < 0.4 ? 1 : 0;
     const which = nth === 0 ? "first" : "second";
-    return motionTask(base, { line: li, col: 0 }, { line: li, col: idxs[nth] },
+    return motionTask(base, { line: li, col: 0 }, { line: li, col: idxs[nth]! },
       `Jump onto the ${which} \`${ch}\` in the line`, nth === 0 ? `f${ch}` : `f${ch} ;`);
   };
 }
@@ -413,27 +413,27 @@ export function findChar(kind: "f" | "F"): TaskGen {
 export function tillChar(kind: "t" | "T"): TaskGen {
   return (rng, base) => {
     const usable = (li: number) => {
-      const occ = punctuationAt(base[li]);
+      const occ = punctuationAt(base[li]!);
       for (const [ch, idxs] of occ) {
-        if (kind === "t" && idxs[0] >= 2) return ch;
-        if (kind === "T" && idxs[idxs.length - 1] <= base[li].length - 3) return ch;
+        if (kind === "t" && idxs[0]! >= 2) return ch;
+        if (kind === "T" && idxs[idxs.length - 1]! <= base[li]!.length - 3) return ch;
       }
       return null;
     };
     const lines = need(nonBlankLines(base).filter((li) => usable(li) !== null), "till line");
     const li = pick(rng, lines);
-    const line = base[li];
+    const line = base[li]!;
     const occ = punctuationAt(line);
     if (kind === "T") {
-      const chars = need([...occ.keys()].filter((c) => occ.get(c)![occ.get(c)!.length - 1] <= line.length - 3), "T char");
+      const chars = need([...occ.keys()].filter((c) => occ.get(c)![occ.get(c)!.length - 1]! <= line.length - 3), "T char");
       const ch = pick(rng, chars);
       const idxs = occ.get(ch)!;
-      return motionTask(base, { line: li, col: line.length - 1 }, { line: li, col: idxs[idxs.length - 1] + 1 },
+      return motionTask(base, { line: li, col: line.length - 1 }, { line: li, col: idxs[idxs.length - 1]! + 1 },
         `Move backwards till just after the last \`${ch}\``, `T${ch}`);
     }
-    const chars = need([...occ.keys()].filter((c) => occ.get(c)![0] >= 2), "t char");
+    const chars = need([...occ.keys()].filter((c) => occ.get(c)![0]! >= 2), "t char");
     const ch = pick(rng, chars);
-    return motionTask(base, { line: li, col: 0 }, { line: li, col: occ.get(ch)![0] - 1 },
+    return motionTask(base, { line: li, col: 0 }, { line: li, col: occ.get(ch)![0]! - 1 },
       `Move till just before the first \`${ch}\``, `t${ch}`);
   };
 }
@@ -441,11 +441,11 @@ export function tillChar(kind: "t" | "T"): TaskGen {
 /** { / }: jump between paragraphs (blocks separated by blank lines). */
 export function paraJump(): TaskGen {
   return (rng, base) => {
-    const blanks = base.map((_, i) => i).filter((i) => isBlank(base[i]));
+    const blanks = base.map((_, i) => i).filter((i) => isBlank(base[i]!));
     const pairs: { start: number; blank: number; hint: string }[] = [];
     for (const b of blanks) {
       for (let s = 0; s < base.length; s++) {
-        if (isBlank(base[s])) continue;
+        if (isBlank(base[s]!)) continue;
         const between = base.slice(Math.min(s, b) + 1, Math.max(s, b)).some(isBlank);
         if (between) continue;
         pairs.push(s < b ? { start: s, blank: b, hint: "}" } : { start: s, blank: b, hint: "{" });
@@ -478,13 +478,13 @@ export function searchSlash(): TaskGen {
   return (rng, base) => {
     const occ = repeatedWords(base);
     const words = need([...occ.keys()].filter((w) => {
-      const first = occ.get(w)![0];
+      const first = occ.get(w)![0]!;
       return first.line > 0 || first.col > 0;
     }), "search word");
     const word = pick(rng, words);
     const list = occ.get(word)!;
     const second = list.length > 2 && rng() < 0.5;
-    return motionTask(base, { line: 0, col: 0 }, second ? list[1] : list[0],
+    return motionTask(base, { line: 0, col: 0 }, second ? list[1]! : list[0]!,
       second
         ? `Search with \`/${word}\` + \`Enter\`, then press \`n\` for the next match`
         : `Search with \`/${word}\` and press \`Enter\``,
@@ -500,7 +500,7 @@ export function searchWord(dir: "*" | "#"): TaskGen {
     const list = occ.get(word)!;
     const i = int(rng, 0, list.length - 1);
     const j = dir === "*" ? (i + 1) % list.length : (i - 1 + list.length) % list.length;
-    return motionTask(base, list[i], list[j],
+    return motionTask(base, list[i]!, list[j]!,
       dir === "*"
         ? "Press `*` to jump to the next occurrence of the word under the cursor"
         : "Press `#` to jump to the previous occurrence of the word under the cursor",
@@ -517,7 +517,7 @@ export function deleteChar(): TaskGen {
   return (rng, base) => {
     const s = pick(rng, need(allSpans(base), "word"));
     const k = int(rng, 1, s.word.length - 1);
-    const perturbed = replaceRange(base, s.line, s.from + k, s.from + k, s.word[k - 1]);
+    const perturbed = replaceRange(base, s.line, s.from + k, s.from + k, s.word[k - 1]!);
     return restore(base, perturbed, {
       instruction: "Delete the highlighted duplicate letter",
       keyHint: "x",
@@ -535,7 +535,7 @@ export function replaceChar(): TaskGen {
   return (rng, base) => {
     const s = pick(rng, need(allSpans(base), "word"));
     const k = int(rng, 0, s.word.length - 1);
-    const perturbed = replaceRange(base, s.line, s.from + k, s.from + k + 1, wrongChar(rng, s.word[k]));
+    const perturbed = replaceRange(base, s.line, s.from + k, s.from + k + 1, wrongChar(rng, s.word[k]!));
     return restore(base, perturbed, {
       instruction: `Fix the highlighted letter: it should be \`${s.word[k]}\``,
       keyHint: `r${s.word[k]}`,
@@ -549,7 +549,7 @@ export function substituteChar(): TaskGen {
   return (rng, base) => {
     const s = pick(rng, need(allSpans(base), "word"));
     const k = int(rng, 0, s.word.length - 1);
-    const perturbed = replaceRange(base, s.line, s.from + k, s.from + k + 1, wrongChar(rng, s.word[k]));
+    const perturbed = replaceRange(base, s.line, s.from + k, s.from + k + 1, wrongChar(rng, s.word[k]!));
     return restore(base, perturbed, {
       instruction: `Fix the highlighted letter with \`s\`: type \`${s.word[k]}\`, then \`Esc\``,
       keyHint: "s",
@@ -562,9 +562,9 @@ export function substituteChar(): TaskGen {
 /** ~: toggle the case of a letter. */
 export function toggleCase(): TaskGen {
   return (rng, base) => {
-    const spans = need(allSpans(base).filter((s) => /[a-z]/.test(s.word[0])), "lowercase word");
+    const spans = need(allSpans(base).filter((s) => /[a-z]/.test(s.word[0]!)), "lowercase word");
     const s = pick(rng, spans);
-    const perturbed = replaceRange(base, s.line, s.from, s.from + 1, s.word[0].toUpperCase());
+    const perturbed = replaceRange(base, s.line, s.from, s.from + 1, s.word[0]!.toUpperCase());
     return restore(base, perturbed, {
       instruction: "The highlighted letter has the wrong case. Toggle it",
       keyHint: "~",
@@ -628,11 +628,11 @@ export function changeWord(op: "cw" | "ciw"): TaskGen {
 export function deleteLine(): TaskGen {
   return (rng, base) => {
     const li = pick(rng, nonBlankLines(base));
-    const perturbed = [...base.slice(0, li + 1), base[li], ...base.slice(li + 1)];
+    const perturbed = [...base.slice(0, li + 1), base[li]!, ...base.slice(li + 1)];
     return restore(base, perturbed, {
       instruction: "Delete the highlighted duplicated line",
       keyHint: "dd",
-      marks: [{ line: li + 1, from: 0, to: base[li].length }],
+      marks: [{ line: li + 1, from: 0, to: base[li]!.length }],
     });
   };
 }
@@ -654,13 +654,13 @@ export function deleteLinesDown(): TaskGen {
 /** D: delete from the cursor to the end of the line. */
 export function deleteToEnd(): TaskGen {
   return (rng, base) => {
-    const li = pick(rng, need(nonBlankLines(base).filter((l) => base[l].length >= 10), "long line"));
+    const li = pick(rng, need(nonBlankLines(base).filter((l) => base[l]!.length >= 10), "long line"));
     const junk = " " + pick(rng, ["// leftover", "@@scratch@@", "<<todo>>"]);
-    const perturbed = replaceRange(base, li, base[li].length, base[li].length, junk);
+    const perturbed = replaceRange(base, li, base[li]!.length, base[li]!.length, junk);
     return restore(base, perturbed, {
       instruction: "Put the cursor on the highlighted junk and delete to the end of the line",
       keyHint: "D",
-      marks: [{ line: li, from: base[li].length, to: base[li].length + junk.length }],
+      marks: [{ line: li, from: base[li]!.length, to: base[li]!.length + junk.length }],
     });
   };
 }
@@ -670,16 +670,16 @@ export function joinLines(): TaskGen {
   return (rng, base) => {
     const candidates: { li: number; s: number }[] = [];
     for (const li of nonBlankLines(base)) {
-      const line = base[li];
+      const line = base[li]!;
       const start = indentOf(line);
       for (let s = start + 2; s < line.length - 2; s++) {
-        if (line[s] === " " && line[s - 1] !== " " && !")]}".includes(line[s + 1]) && line[s + 1] !== " ") {
+        if (line[s] === " " && line[s - 1] !== " " && !")]}".includes(line[s + 1]!) && line[s + 1] !== " ") {
           candidates.push({ li, s });
         }
       }
     }
     const c = pick(rng, need(candidates, "join point"));
-    const line = base[c.li];
+    const line = base[c.li]!;
     const perturbed = [
       ...base.slice(0, c.li),
       line.slice(0, c.s),
@@ -698,11 +698,11 @@ export function joinLines(): TaskGen {
 export function duplicateLine(): TaskGen {
   return (rng, base) => {
     const li = pick(rng, nonBlankLines(base));
-    const target = [...base.slice(0, li + 1), base[li], ...base.slice(li + 1)];
+    const target = [...base.slice(0, li + 1), base[li]!, ...base.slice(li + 1)];
     return modify(base, target, {
       instruction: "Duplicate the highlighted line so it appears twice",
       keyHint: "yy p",
-      marks: [{ line: li, from: 0, to: base[li].length, kind: "focus" }],
+      marks: [{ line: li, from: 0, to: base[li]!.length, kind: "focus" }],
     });
   };
 }
@@ -711,13 +711,13 @@ export function duplicateLine(): TaskGen {
 export function moveLineDown(): TaskGen {
   return (rng, base) => {
     const nb = nonBlankLines(base);
-    const li = pick(rng, need(nb.filter((l) => l + 1 < base.length && !isBlank(base[l + 1])), "swappable line"));
+    const li = pick(rng, need(nb.filter((l) => l + 1 < base.length && !isBlank(base[l + 1]!)), "swappable line"));
     const target = [...base];
-    [target[li], target[li + 1]] = [target[li + 1], target[li]];
+    [target[li], target[li + 1]] = [target[li + 1]!, target[li]!];
     return modify(base, target, {
       instruction: "Move the highlighted line one line down",
       keyHint: "dd p",
-      marks: [{ line: li, from: 0, to: base[li].length, kind: "focus" }],
+      marks: [{ line: li, from: 0, to: base[li]!.length, kind: "focus" }],
     });
   };
 }
@@ -728,12 +728,12 @@ export function copyLineTo(): TaskGen {
     const nb = nonBlankLines(base);
     const src = pick(rng, nb);
     const dst = pick(rng, need(nb.filter((l) => Math.abs(l - src) >= 2), "paste target"));
-    const target = [...base.slice(0, dst + 1), base[src], ...base.slice(dst + 1)];
+    const target = [...base.slice(0, dst + 1), base[src]!, ...base.slice(dst + 1)];
     return modify(base, target, {
       instruction: "Copy the highlighted line and paste it below the ghost marker",
       keyHint: "yy p",
-      marks: [{ line: src, from: 0, to: base[src].length, kind: "focus" }],
-      ghost: { line: dst, col: base[dst].length, text: " ⏎ " + base[src].trim() },
+      marks: [{ line: src, from: 0, to: base[src]!.length, kind: "focus" }],
+      ghost: { line: dst, col: base[dst]!.length, text: " ⏎ " + base[src]!.trim() },
     });
   };
 }
@@ -746,12 +746,12 @@ export function moveLineTo(): TaskGen {
     const dst = pick(rng, need(nb.filter((l) => l !== src && l !== src - 1 && Math.abs(l - src) >= 2), "move target"));
     const without = base.filter((_, i) => i !== src);
     const at = dst < src ? dst : dst - 1;
-    const target = [...without.slice(0, at + 1), base[src], ...without.slice(at + 1)];
+    const target = [...without.slice(0, at + 1), base[src]!, ...without.slice(at + 1)];
     return modify(base, target, {
       instruction: "Move the highlighted line so it sits below the ghost marker",
       keyHint: "dd p",
-      marks: [{ line: src, from: 0, to: base[src].length }],
-      ghost: { line: dst, col: base[dst].length, text: " ⏎ " + base[src].trim() },
+      marks: [{ line: src, from: 0, to: base[src]!.length }],
+      ghost: { line: dst, col: base[dst]!.length, text: " ⏎ " + base[src]!.trim() },
     });
   };
 }
@@ -805,7 +805,7 @@ export function typeFresh(): TaskGen {
 /** i: restore a missing word where the ghost shows. */
 export function insertMissing(): TaskGen {
   return (rng, base) => {
-    const spans = need(allSpans(base).filter((s) => base[s.line][s.to] === " "), "removable word");
+    const spans = need(allSpans(base).filter((s) => base[s.line]![s.to] === " "), "removable word");
     const s = pick(rng, spans);
     const perturbed = replaceRange(base, s.line, s.from, s.to + 1, "");
     return restore(base, perturbed, {
@@ -822,15 +822,15 @@ export function appendEnd(): TaskGen {
   return (rng, base) => {
     const candidates: { li: number; s: number }[] = [];
     for (const li of nonBlankLines(base)) {
-      const line = base[li];
+      const line = base[li]!;
       const s = line.lastIndexOf(" ");
       if (s > indentOf(line) + 2 && line.length - s <= 14 && line.length - s >= 3) {
         candidates.push({ li, s });
       }
     }
     const c = pick(rng, need(candidates, "line tail"));
-    const tail = base[c.li].slice(c.s);
-    const perturbed = replaceRange(base, c.li, c.s, base[c.li].length, "");
+    const tail = base[c.li]!.slice(c.s);
+    const perturbed = replaceRange(base, c.li, c.s, base[c.li]!.length, "");
     return restore(base, perturbed, {
       instruction: "The line lost its ending. Append exactly what the ghost shows, then `Esc`",
       keyHint: "A",
@@ -844,7 +844,7 @@ export function appendEnd(): TaskGen {
 export function insertStart(): TaskGen {
   return (rng, base) => {
     const spans = need(
-      allSpans(base).filter((s) => s.from === indentOf(base[s.line]) && base[s.line][s.to] === " "),
+      allSpans(base).filter((s) => s.from === indentOf(base[s.line]!) && base[s.line]![s.to] === " "),
       "line head",
     );
     const s = pick(rng, spans);
@@ -864,21 +864,21 @@ export function openLine(dir: "o" | "O"): TaskGen {
     const anchorOk = (line: string | undefined) =>
       line !== undefined && (isBlank(line) || indentOf(line) === 0);
     const candidates = nonBlankLines(base).filter((li) => {
-      if (indentOf(base[li]) !== 0) return false;
+      if (indentOf(base[li]!) !== 0) return false;
       return dir === "o" ? li > 0 && anchorOk(base[li - 1]) : anchorOk(base[li + 1]);
     });
     const li = pick(rng, need(candidates, `${dir} line`));
-    const removed = base[li];
+    const removed = base[li]!;
     const perturbed = base.filter((_, i) => i !== li);
     const anchor = dir === "o" ? li - 1 : li; // index in the perturbed text
     const ghost =
       dir === "o"
-        ? { line: anchor, col: perturbed[anchor].length, text: " ⏎ " + removed }
+        ? { line: anchor, col: perturbed[anchor]!.length, text: " ⏎ " + removed }
         : { line: anchor, col: 0, text: removed + " ⏎ " };
     // A blank anchor line cannot carry a visible focus mark; the ghost alone locates it.
     const marks: TaskMark[] =
-      perturbed[anchor].length > 0
-        ? [{ line: anchor, from: 0, to: perturbed[anchor].length, kind: "focus" }]
+      perturbed[anchor]!.length > 0
+        ? [{ line: anchor, from: 0, to: perturbed[anchor]!.length, kind: "focus" }]
         : [];
     return restore(base, perturbed, {
       instruction:
@@ -902,13 +902,13 @@ type Region = { line: number; from: number; to: number }; // content range, deli
 function quoteRegions(base: Snippet, tight = false): Region[] {
   const regions: Region[] = [];
   for (const li of nonBlankLines(base)) {
-    for (const m of base[li].matchAll(/"([^"]{2,24})"/g)) {
+    for (const m of base[li]!.matchAll(/"([^"]{2,24})"/g)) {
       if (tight) {
-        const before = base[li][m.index - 1];
-        const after = base[li][m.index + m[0].length];
+        const before = base[li]![m.index - 1];
+        const after = base[li]![m.index + m[0].length];
         if (before === " " || before === undefined || after === " " || after === undefined) continue;
       }
-      regions.push({ line: li, from: m.index + 1, to: m.index + 1 + m[1].length });
+      regions.push({ line: li, from: m.index + 1, to: m.index + 1 + m[1]!.length });
     }
   }
   return regions;
@@ -918,7 +918,7 @@ function bracketRegions(base: Snippet, open: "(" | "{" | "["): Region[] {
   const close = { "(": ")", "{": "}", "[": "]" }[open];
   const regions: Region[] = [];
   for (const li of nonBlankLines(base)) {
-    const line = base[li];
+    const line = base[li]!;
     for (let i = 0; i < line.length; i++) {
       if (line[i] !== open) continue;
       let depth = 1;
@@ -994,14 +994,16 @@ export function deleteInsidePara(): TaskGen {
     const blocks: { from: number; to: number }[] = [];
     let start: number | null = null;
     for (let i = 0; i <= base.length; i++) {
-      if (i < base.length && !isBlank(base[i])) {
+      if (i < base.length && !isBlank(base[i]!)) {
         if (start === null) start = i;
       } else if (start !== null) {
         blocks.push({ from: start, to: i - 1 });
         start = null;
       }
     }
-    const b = pick(rng, need(blocks, "paragraph block"));
+    // A block touching the last line can't be used: codemirror-vim's `dip`
+    // leaves a stray blank line behind when nothing follows the deletion.
+    const b = pick(rng, need(blocks.filter((blk) => blk.to < base.length - 1), "paragraph block"));
     const target = [...base.slice(0, b.from), ...base.slice(b.to + 1)];
     return modify(base, target, {
       instruction: "Delete every line of the highlighted paragraph with one command",
@@ -1009,7 +1011,7 @@ export function deleteInsidePara(): TaskGen {
       marks: Array.from({ length: b.to - b.from + 1 }, (_, k) => ({
         line: b.from + k,
         from: 0,
-        to: base[b.from + k].length,
+        to: base[b.from + k]!.length,
       })),
       startCursor: { line: b.from, col: 0 },
     });
@@ -1019,7 +1021,7 @@ export function deleteInsidePara(): TaskGen {
 /** dap: delete a stray paragraph including its trailing blank line. */
 export function deleteAroundPara(): TaskGen {
   return (rng, base) => {
-    const blanks = need(base.map((_, i) => i).filter((i) => isBlank(base[i])), "blank line");
+    const blanks = need(base.map((_, i) => i).filter((i) => isBlank(base[i]!)), "blank line");
     const b = pick(rng, blanks);
     const junk = [`// scratch: ${pick(rng, WORDS)}`, `// scratch: ${pick(rng, WORDS)}`];
     const perturbed = [...base.slice(0, b + 1), ...junk, "", ...base.slice(b + 1)];
@@ -1041,7 +1043,7 @@ export function visualDeleteSpan(): TaskGen {
   return (rng, base) => {
     const candidates: { li: number; s: number }[] = [];
     for (const li of nonBlankLines(base)) {
-      const line = base[li];
+      const line = base[li]!;
       for (let s = indentOf(line) + 2; s < line.length - 2; s++) {
         if (line[s] === " " && line[s - 1] !== " ") candidates.push({ li, s });
       }
@@ -1081,14 +1083,14 @@ export function visualDeleteLines(): TaskGen {
 export function markRoundTrip(): TaskGen {
   return (rng, base) => {
     const homes = need(
-      nonBlankLines(base).filter((l) => l <= 2 && indentOf(base[l]) === 0),
+      nonBlankLines(base).filter((l) => l <= 2 && indentOf(base[l]!) === 0),
       "home line",
     );
     const home = pick(rng, homes);
     const spans = need(allSpans(base).filter((s) => s.line >= home + 4), "far typo");
     const s = pick(rng, spans);
     const k = int(rng, 1, s.word.length - 1);
-    const perturbed = replaceRange(base, s.line, s.from + k, s.from + k, s.word[k - 1]);
+    const perturbed = replaceRange(base, s.line, s.from + k, s.from + k, s.word[k - 1]!);
     return restore(base, perturbed, {
       instruction: "Press `ma` to mark this spot, delete the highlighted duplicate letter, then jump back with `'a`",
       keyHint: "ma … 'a",

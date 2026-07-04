@@ -6,7 +6,7 @@ import type { Cursor, Task } from "../src/lessons/types";
 function inBounds(text: string, c: Cursor): boolean {
   const lines = text.split("\n");
   if (c.line < 0 || c.line >= lines.length) return false;
-  return c.col >= 0 && c.col <= lines[c.line].length;
+  return c.col >= 0 && c.col <= lines[c.line]!.length;
 }
 
 function checkTask(t: Task, label: string): void {
@@ -21,12 +21,12 @@ function checkTask(t: Task, label: string): void {
       expect(m.line, `${label} mark line`).toBeLessThan(lines.length);
       expect(m.from, `${label} mark from`).toBeGreaterThanOrEqual(0);
       expect(m.to, `${label} mark to`).toBeGreaterThan(m.from);
-      expect(m.to, `${label} mark to bounds`).toBeLessThanOrEqual(lines[m.line].length);
+      expect(m.to, `${label} mark to bounds`).toBeLessThanOrEqual(lines[m.line]!.length);
     }
   }
   if (t.ghost) {
     expect(t.ghost.line, `${label} ghost line`).toBeLessThan(lines.length);
-    expect(t.ghost.col, `${label} ghost col`).toBeLessThanOrEqual(lines[t.ghost.line].length);
+    expect(t.ghost.col, `${label} ghost col`).toBeLessThanOrEqual(lines[t.ghost.line]!.length);
     expect(t.ghost.text.length, `${label} ghost text`).toBeGreaterThan(0);
   }
   // The task must actually require something: a text change, a cursor move,
@@ -44,7 +44,7 @@ describe("lesson data", () => {
     const ids = lessons.map((l) => l.id);
     expect(new Set(ids).size).toBe(ids.length);
     for (let i = 1; i < lessons.length; i++) {
-      expect(lessons[i].order).toBeGreaterThan(lessons[i - 1].order);
+      expect(lessons[i]!.order).toBeGreaterThan(lessons[i - 1]!.order);
     }
   });
 
@@ -80,7 +80,7 @@ describe("lesson data", () => {
     ]);
     expect(new Set(chs.map((c) => c.slug)).size).toBe(chs.length);
     expect(chs.flatMap((c) => c.lessons)).toEqual(lessons);
-    expect(getChapter(chs[2].slug)?.name).toBe("Essential Motions");
+    expect(getChapter(chs[2]!.slug)?.name).toBe("Essential Motions");
     expect(getChapter("nope")).toBeUndefined();
   });
 
