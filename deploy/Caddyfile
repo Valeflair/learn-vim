@@ -1,0 +1,8 @@
+# Served over plain HTTP on the bare IPv6 address for now — public CAs can't
+# issue certs for a literal IP. Once a domain points at this server, replace
+# ":80" below with the domain name and Caddy will provision HTTPS automatically.
+:80 {
+	root * /var/www/learn-vim
+	file_server
+	encode zstd gzip
+}
